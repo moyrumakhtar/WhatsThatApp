@@ -8,15 +8,12 @@ export default class LogInscreen extends Component {
         super(props);
 
         this.state = {
-            eMail: "", pWord: "", message: "",
-            id: ""
+            id: "", message: "",
+            eMail: "", pWord: "", 
         }
-        this.loginrequest = this.loginrequest.bind(this)
-
     }
 
     loginrequest = async () => {
-        this.setState({ sent: true })
         this.setState({ message: "" })
 
         const emailRegex = new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
@@ -60,14 +57,15 @@ export default class LogInscreen extends Component {
                 }
                 else {
                     try {
-                        await AsyncStorage.setItem('session_token', session);
-                        await AsyncStorage.setItem('user_id', this.state.id.toString());
+                        await AsyncStorage.setItem("session_token", session);
+                        await AsyncStorage.setItem("user_id", this.state.id.toString());
                     } catch (message) {
 
+                        console.error("ERROR", message);
                         this.setState({ message: "ERROR OCCURRED WHEN SAVING TOKEN" });
-                        return;
                     }
-                    this.props.navigation.navigate("home");
+                    this.setState({ message: "" });
+                    this.props.navigation.navigate("main");
                 }
 
             }

@@ -7,18 +7,9 @@ export default class SignUpscreen extends Component {
         super(props);
 
         this.state = {
-            fName: "",
-            sName: "",
-            eMail: "",
-            pWord: "",
-            message: ""
+            id: "", fName: "", sName: "", 
+            eMail: "", pWord: "", message: ""
         }
-
-        this.signuprequest = this.signuprequest.bind(this)
-    }
-
-    tologin = () => {
-        this.props.navigation.navigate('login');
     }
 
     signuprequest = async () => {
@@ -84,6 +75,10 @@ export default class SignUpscreen extends Component {
         } catch (message) {
             console.error("ERROR:", message);
         }
+    }
+
+    tologin = () => {
+        this.props.navigation.navigate('login');
     }
 
     render() {
