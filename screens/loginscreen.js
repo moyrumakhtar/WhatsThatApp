@@ -2,37 +2,28 @@ import React, {Component} from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet} from "react-native";
 import logo from '../images/logo.jpg';
 
-export default class signupscreen extends Component 
+export default class loginscreen extends Component 
 {
     constructor(props) 
     {
         super(props);
 
         this.state = {
-            id: "", fName: "", sName: "",
-            eMail: "", pWord: "", message: ""
+            eMail: "", pWord: "", message: "",
+            id: ""
         }
         
     }
 
-    signuprequest = async () => 
-    {
+    loginrequest = async () => 
+    {   
         this.setState ({sent: true})
         this.setState ({message: ""})
 
-        const nameRegex = new RegExp(/^[a-zA-Z]{2,40}$/);
         const emailRegex = new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-        const pwordRegex = new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\W)[A-Za-z\d\W]{8,}$/);
+        
 
-        if(!(this.state.fName))
-        {
-            this.setState ({ message: "ENTER FIRST NAME" })
-        }
-        else if(!(this.state.sName))
-        {
-            this.setState ({ message: "ENTER LAST NAME" })
-        }
-        else if(!(this.state.eMail))
+        if(!(this.state.eMail))
         {
             this.setState ({ message: "ENTER EMAIL" })  
         }
@@ -40,64 +31,76 @@ export default class signupscreen extends Component
         {
             this.setState ({ message: "ENTER PASSWORD" })
         }
-        else if(!(nameRegex.test(this.state.fName)||nameRegex.test(this.state.sName)))
-        {
-            this.setState({ message: "ENTER VALID NAME, NAME CANT CONTAIN SPECAIL CHARACTERS" })
-        }
         else if(!(emailRegex.test(this.state.eMail)))
         {
             this.setState({ message: "ENTER VALID EMAIL" })
         }
-        else if(!(pwordRegex.test(this.state.pWord)))
-        {
-            this.setState({ message: "ENTER STRONG PASSWORD: 1 UPPERCASE, 1 LOWERCASE, 1 NUMBER, 1 SPECIAL AND 8 CHARACTERS LONG" })
-        }
-
-        try {
-            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(
+        else{
+            
+            try {
+                const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(
+                        {
+                            email: this.state.eMail,
+                            password: this.state.pWord,
+                        }
+                    ),
+                });
+    
+                if(serverOutput.status === 200)
+                {
+                    const data = await response.json();
+                    console.log("LOGIN SUCCESSFULLY");
+                    const session = data.token;
+                    this.setState ({ id: data.user_id });
+    
+                    if(!session)
                     {
-                        first_name: this.state.fName,
-                        last_name: this.state.sName,
-                        email: this.state.eMail,
-                        password: this.state.pWord,
+                        console.log("SESSION TOKEN NOT FOUND");
+                        this.setState({ message: "ERROR OCCURRED, TRY AGAIN" });
+                    } 
+                    else
+                    {
+                        try {
+                            await AsyncStorage.setItem('session_token', session);
+                            await AsyncStorage.setItem('user_id', this.state.id.toString());  
+                        } catch (message) {
+                            
+                            this.setState({ message: "ERROR OCCURRED WHEN SAVING TOKEN" });
+                            return;
+                        }
                     }
-                ),
-            });
-
-            if (serverOutput.status === 201) 
-            {
-                const data = await response.json();
-                console.log("USER CREATED SUCCESSFULLY");
-                this.setState ({ id: data.user_id });
-                this.props.navigation.navigate("login");
-        
-            } 
-            else if(serverOutput.status === 400)
-            {
-                console.log("EMAIL ALREADY REGISTORED");
-                this.setState({ message: "EMAIL ALREADY REGISTORED" }); 
+    
+                } 
+                else if(serverOutput.status === 400)
+                {
+                    console.log("INVALID LOGIN DETAILS");
+                    this.setState({ message: "INVALID EMAIL OR PASSWORD" }); 
+    
+                }
+                else 
+                {
+                    console.log("ERROR WHEN LOGGING IN");
+                    this.setState({ message: "ERROR WHEN LOGGING IN" });
+                }
+    
+            } catch (message) {
+                this.setState({ message: "ERROR WHEN LOGGING IN, TRY AGAIN" });
             }
-            else 
-            {
-                console.log("ERROR WHEN CREATING USER");
-                this.setState({ message: "ERROR WHEN CREATING USER, TRY AGAIN" });
-            }
-        } catch (message) {
-           this.setState({ message: "ERROR WHEN CREATING USER, TRY AGAIN" });
         }
     }
+
     render() {
         return (
             <View>
 
                 <img
-                id="signupLogo"
-                src={logo} className="signupLogo"
+                id="loginLogo"
+                src={logo} className="loginLogo"
                 />
 
                 <View style={ styles.container}>
@@ -105,26 +108,8 @@ export default class signupscreen extends Component
                     <View style = {styles.container}>
 
                         <View style = {styles.container}> 
-                            <Text style = {styles.formTitle}> Create a New Account </Text>
-                            <Text style = {styles.formText}> First Name </Text>
-                            <TextInput 
-                            id="fName"
-                            placeholder="First"
-                            placeholderTextColor={"#C0C0C0"}
-                            onChangeText={fName => this.setState ({ fName })}
-                            defaultValue={this.state.fName}
-                            style = {styles.input}
-                            /> 
-                            
-
-                            <Text style = {styles.formText}> Last Name </Text>
-                            <TextInput 
-                            placeholder="Last"
-                            placeholderTextColor={"#C0C0C0"}
-                            onChangeText={sName => this.setState ({ sName })}
-                            defaultValue={this.state.sName}
-                            style = {styles.input}
-                            />
+                            <Text style = {styles.formTitle}> Login to Your Account </Text>
+                       
 
                             <Text style = {styles.formText}> Email Address </Text>
                             <TextInput 
@@ -145,15 +130,15 @@ export default class signupscreen extends Component
                             secureTextEntry
                             />
 
-                        <TouchableOpacity onPress={this.signuprequest}>
+                        <TouchableOpacity onPress={this.loginrequest}>
                             <View style = {styles.button}>
-                                <Text style = {styles.buttonText}>Sign Up</Text>
+                                <Text style = {styles.buttonText}>Login </Text>
                             </View>
                         </TouchableOpacity> 
                      
-                        <TouchableOpacity  onPress={this.tologin}>
+                        <TouchableOpacity  onPress={this.tosignup}>
                             <View>
-                                <Text style = {styles.formLoginText}>Already have an account? Login Here</Text>
+                                <Text style = {styles.formLoginText}> Don't have an account? Create Here </Text>
                             </View>
                         </TouchableOpacity> 
 
@@ -171,9 +156,9 @@ export default class signupscreen extends Component
         );
     }
 
-    tologin = () => 
+    tosignup = () => 
     {
-        this.props.navigation.navigate("login");
+        this.props.navigation.navigate("signup");
     }
 }
 
