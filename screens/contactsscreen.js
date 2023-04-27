@@ -201,8 +201,6 @@ export default class ContactsScreen extends Component {
 
     }
 
-
-
     searchItem = ({ item }) => {
         return (
             <View style={styles.searchItems}>

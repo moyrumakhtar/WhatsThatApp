@@ -10,7 +10,7 @@ export default class BlockScreen extends Component {
         super(props);
 
         this.state = {
-            blocked: [], message: "", loadReady: true
+            blocked: [], message: "", blockedReady: true
         };
     }
 
@@ -109,9 +109,9 @@ export default class BlockScreen extends Component {
     };
 
     render() {
-        if (this.state.loadReady === true) {
+        if (this.state.blockedReady === true) {
             this.loadBlocked();
-            this.setState({ loadReady: false });
+            this.setState({ blockedReady: false });
         }
         return (
             <View>
