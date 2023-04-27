@@ -1,18 +1,21 @@
 import React, { Component } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Ionicons from 'react-native-vector-icons/Entypo';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, PermissionsAndroid } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import appHeader from '../images/header.jpg';
+import { logOut } from "../request/logout"
+
+import appHeader from "../images/header.jpg";
 import Icon from "react-native-vector-icons/Ionicons";
+import Feather from "react-native-vector-icons/Feather";
+import Ionicons from "react-native-vector-icons/Entypo";
 
 export default class ContactsScreen extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            contacts: [], message: "", newContacts: "",
-            searchedContacts: [], searchedValue: "", newContactID: "",
+            contacts: [], message: "",
+            searchedContacts: [], searchedValue: "", loadReady: true,
         };
     }
 
@@ -30,22 +33,25 @@ export default class ContactsScreen extends Component {
 
             if (serverOutput.status === 200) {
                 const data = await serverOutput.json();
+                this.setState({ contacts: data });
+                console.log("LOADED CONTACTS");
             }
             else if (serverOutput.status === 401) {
                 console.log("UNAUTHORISED");
                 this.setState({ message: "UNAUTHORISED, LOG IN" });
             }
             else {
-                console.log("UNAUTHORISED");
-                this.setState({ message: "UNAUTHORISED, LOG IN" });
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
             }
         } catch (message) {
             console.error("ERROR:", message);
         }
     }
 
-    deleteContact = async (id) => {
+    removeContact = async (item) => {
         const session_token = await AsyncStorage.getItem("session_token");
+        const id = item.user_id;
 
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${id}/contact`, {
@@ -58,6 +64,7 @@ export default class ContactsScreen extends Component {
 
             if (serverOutput.status === 200) {
                 this.loadContacts();
+                console.log("USER DELETED, ID:", id);
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -82,7 +89,7 @@ export default class ContactsScreen extends Component {
 
     addContact = async (item) => {
         const session_token = await AsyncStorage.getItem("session_token");
-        const id = item.user_id
+        const id = item.user_id;
 
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${id}/contact`, {
@@ -91,7 +98,7 @@ export default class ContactsScreen extends Component {
                     'Content-Type': 'application/json',
                     'X-Authorization': session_token,
                 },
-                body: JSON.stringify({ id }),
+                body: JSON.stringify({id}),
             });
 
             if (serverOutput.status === 200) {
@@ -118,8 +125,47 @@ export default class ContactsScreen extends Component {
         }
     }
 
+    blockContact = async (item) => {
+        const session_token = await AsyncStorage.getItem("session_token");
+        const id = item.user_id;
+
+        try {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${id}/block`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': session_token,
+                },
+                body: JSON.stringify({id}),
+            });
+
+            if (serverOutput.status === 200) {
+                this.loadContacts();
+                console.log("USER BLOCK, ID:", id);
+            }
+            else if (serverOutput.status === 400) {
+                console.log("BAD REQUEST");
+                this.setState({ message: "BAD REQUEST, CAN'T DELETE YOURSELF" });
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+            }
+            else if (serverOutput.status === 404) {
+                console.log("USER NOT FOUND");
+                this.setState({ message: "USER NOT FOUND, ENTER VALID ID" });
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN LATER" });
+            }
+        } catch (message) {
+            console.error("ERROR:", message);
+        }
+    }
+
     searchFunction = async (query, limit = 20, offset = 0) => {
-        const sessiontoken = await AsyncStorage.getItem('session_token');
+        const sessiontoken = await AsyncStorage.getItem("session_token");
 
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/search?q=${query}&search_in=all&limit=${limit}&offset=${offset}`, {
@@ -130,9 +176,9 @@ export default class ContactsScreen extends Component {
                 },
             });
             const data = await serverOutput.json();
-
             if (serverOutput.status === 200) {
                 this.setState({ searchedContacts: data });
+
             } else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
                 this.setState({ message: "BAD REQUEST, CAN'T ADD YOURSELF" });
@@ -155,34 +201,74 @@ export default class ContactsScreen extends Component {
 
     }
 
+
+
     searchItem = ({ item }) => {
         return (
             <View style={styles.searchItems}>
                 <Text style={styles.searchText}>
                     {item.given_name}{" "}{item.family_name}
                 </Text>
-
                 <TouchableOpacity
-                onPress={() => this.addContact(item)}>
-                    <Icon name="md-person-add" size={15} color="#999999" />
+                    onPress={() => this.addContact(item)}>
+                    <Icon name="md-person-add" size={15} color="#14c83c" />
                 </TouchableOpacity>
             </View>
-        )
-    }
+        );
+    };
+
     contactItem = ({ item }) => {
         return (
-            
             <View style={styles.searchItems}>
                 <Text style={styles.searchText}>
-                {item.given_name}{" "}{item.family_name}
+                    {item.first_name} {item.last_name}
                 </Text>
+                <View style={styles.buttonControl}>
+                    <View style={styles.space}>
+                        <TouchableOpacity
+                            onPress={() => this.blockContact(item)}>
+                            <Ionicons name="block" size={15} color="#CC0000" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.space}>
+                        <TouchableOpacity
+                            onPress={() => this.removeContact(item)}>
+                            <Icon name="person-remove" size={15} color="#0f3d0f" />
+                        </TouchableOpacity>
+                    </View>
+
+
+                </View>
+
             </View>
+        );
+    };
 
-        )
-
+    logOutUser = async () => {
+        try {
+            const serverOutput = await logOut();
+            if (serverOutput === 200) {
+                await AsyncStorage.removeItem("session_token");
+            }
+            this.tologIn();
+        } catch (message) {
+            this.setState({ error: error.message });
+        }
     }
 
+    tologIn = () => {
+        this.props.navigation.navigate("login");
+    };
+    toBlocked = () => {
+        this.props.navigation.navigate("blocked");
+    };
+
     render() {
+        if (this.state.loadReady === true) {
+            this.loadContacts();
+            this.setState({ loadReady: false });
+        }
         return (
             <View>
                 <img
@@ -194,12 +280,14 @@ export default class ContactsScreen extends Component {
                 <View style={styles.container}>
                     <View style={styles.header}>
                         <View style={styles.headerCon}>
-                            <TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => this.toBlocked()}>
                                 <Ionicons name="block" size={25} color="#CC0000" />
                             </TouchableOpacity>
                             <Text style={styles.formAppTitle}> Contacts </Text>
-                            <TouchableOpacity>
-                                <Icon name="md-person-add" size={25} color="#14c83c" />
+                            <TouchableOpacity
+                                onPress={() => this.logOutUser()}>
+                                <Feather name="log-out" size={25} color="#14c83c" />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -227,15 +315,13 @@ export default class ContactsScreen extends Component {
                             <FlatList
                                 data={this.state.contacts}
                                 renderItem={this.contactItem}
-                                ListEmptyComponent={<Text style={styles.formText}>No Contact Found</Text>}
+                                ListEmptyComponent={<Text style={styles.formText}>No Contacts Found</Text>}
                             />
                         )
                         }
                     </View>
 
-
                 </View>
-
             </View>
         );
     }
@@ -244,6 +330,15 @@ export default class ContactsScreen extends Component {
 
 const styles = StyleSheet.create
     ({
+        space:
+        {
+            marginLeft: 30,
+        },
+        buttonControl:
+        {
+            flexDirection: "row",
+            marginLeft: 10,
+        },
         searchTextHeader:
         {
             marginLeft: 30,
@@ -259,7 +354,7 @@ const styles = StyleSheet.create
         {
             padding: 5,
             color: 'black',
-            marginTop: 0,
+            marginTop: 5,
             margin: 30,
             marginBottom: 0,
             fontSize: 13,
@@ -276,10 +371,8 @@ const styles = StyleSheet.create
         listBox:
         {
             marginTop: 15,
-            // backgroundColor: "#D9D9D9",
             width: "90%",
             marginLeft: 17,
-            //paddingTop: 540,
             height: 510,
         },
         header:

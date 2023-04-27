@@ -19,7 +19,7 @@ export default class SettingsScreen extends Component {
                     src={appHeader} className="appHeader"
                 />
                 <View style={styles.container}>
-                    settings
+       
                   
                 </View>
                

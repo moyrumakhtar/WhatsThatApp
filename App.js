@@ -11,21 +11,32 @@ import LogInscreen from './screens/loginscreen';
 import ChatsScreen from "./screens/chatsscreen";
 import SettingsScreen from './screens/settingsscreen';
 import ContactsScreen from './screens/contactsscreen';
+import BlockScreen from './screens/blockusersscreen';
 
 const tabNav = createBottomTabNavigator();
 const stackNav = createNativeStackNavigator();
+
+function contactStack() {
+  return (
+    <stackNav.Navigator
+    initialRouteName="contacts">
+      <stackNav.Screen name="contacts" component={ContactsScreen} options={{ headerShown: false }}/>
+      <stackNav.Screen name="blocked" component={BlockScreen} options={{ headerShown: false }}/>
+    </stackNav.Navigator>
+  )
+}
 
 function mainTabs() {
   return (
 
     <tabNav.Navigator
-      initialRouteName='contacts'
+      initialRouteName="contacts"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           if (route.name === "chats") {
             return (
               <Ionicons name={focused
-                ? 'chatbubbles' : 'chatbubbles'}
+                ? "chatbubbles" : "chatbubbles"}
                 size={size}
                 color={color}
               />
@@ -34,7 +45,7 @@ function mainTabs() {
           else if (route.name === "settings") {
             return (
               <Ionicons name={focused
-                ? 'settings' : 'settings'}
+                ? "settings" : "settings"}
                 size={size}
                 color={color}
               />
@@ -43,7 +54,7 @@ function mainTabs() {
           else if (route.name === "contacts") {
             return (
               <FontAwesome name={focused
-                ? 'address-book' : 'address-book'}
+                ? "address-book" : "address-book"}
                 size={size}
                 color={color}
               />
@@ -57,14 +68,13 @@ function mainTabs() {
 
       })}
     >
-      <tabNav.Screen name="contacts" component={ContactsScreen} />
+      <tabNav.Screen name="contacts" component={contactStack} />
       <tabNav.Screen name="chats" component={ChatsScreen} />
       <tabNav.Screen name="settings" component={SettingsScreen} />
     </tabNav.Navigator>
 
   )
 }
-
 
 export default class App extends Component {
   render() {
