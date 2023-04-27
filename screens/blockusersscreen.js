@@ -14,10 +14,6 @@ export default class BlockScreen extends Component {
         };
     }
 
-    toContacts = () => {
-        this.props.navigation.navigate("contacts");
-    };
-
     loadBlocked = async () => {
         const session_token = await AsyncStorage.getItem("session_token");
 
@@ -106,6 +102,10 @@ export default class BlockScreen extends Component {
 
             </View>
         );
+    };
+
+    toContacts = () => {
+        this.props.navigation.navigate("contacts");
     };
 
     render() {

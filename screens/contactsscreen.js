@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, PermissionsAndroid } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { logOut } from "../request/logout"
-
 import appHeader from "../images/header.jpg";
 import Icon from "react-native-vector-icons/Ionicons";
 import Feather from "react-native-vector-icons/Feather";
@@ -244,21 +242,6 @@ export default class ContactsScreen extends Component {
         );
     };
 
-    logOutUser = async () => {
-        try {
-            const serverOutput = await logOut();
-            if (serverOutput === 200) {
-                await AsyncStorage.removeItem("session_token");
-            }
-            this.tologIn();
-        } catch (message) {
-            this.setState({ error: error.message });
-        }
-    }
-
-    tologIn = () => {
-        this.props.navigation.navigate("login");
-    };
     toBlocked = () => {
         this.props.navigation.navigate("blocked");
     };
@@ -281,12 +264,12 @@ export default class ContactsScreen extends Component {
                         <View style={styles.headerCon}>
                             <TouchableOpacity
                                 onPress={() => this.toBlocked()}>
-                                <Ionicons name="block" size={25} color="#CC0000" />
+                                <Ionicons name="block" size={25} color="#f2f2f2" />
                             </TouchableOpacity>
                             <Text style={styles.formAppTitle}> Contacts </Text>
                             <TouchableOpacity
-                                onPress={() => this.logOutUser()}>
-                                <Feather name="log-out" size={25} color="#14c83c" />
+                                onPress={() => this.toBlocked()}>
+                                <Ionicons name="block" size={25} color="#CC0000" />
                             </TouchableOpacity>
                         </View>
                     </View>

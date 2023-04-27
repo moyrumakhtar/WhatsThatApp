@@ -12,9 +12,20 @@ import ChatsScreen from "./screens/chatsscreen";
 import SettingsScreen from './screens/settingsscreen';
 import ContactsScreen from './screens/contactsscreen';
 import BlockScreen from './screens/blockusersscreen';
+import Editscreen from './screens/editscreen';
 
 const tabNav = createBottomTabNavigator();
 const stackNav = createNativeStackNavigator();
+
+function settingStack() {
+  return (
+    <stackNav.Navigator
+    initialRouteName="settings">
+      <stackNav.Screen name="settings" component={SettingsScreen} options={{ headerShown: false }}/>
+      <stackNav.Screen name="edit" component={Editscreen} options={{ headerShown: false }}/>
+    </stackNav.Navigator>
+  )
+}
 
 function contactStack() {
   return (
@@ -29,15 +40,16 @@ function contactStack() {
 function mainTabs() {
   return (
 
-    <tabNav.Navigator
-      initialRouteName="contact"
+    <tabNav.Navigator 
+      initialRouteName="settings"
       screenOptions={({ route }) => ({
+        tabBarStyle: { height: 70 },
         tabBarIcon: ({ focused, color, size }) => {
           if (route.name === "chats") {
             return (
               <Ionicons name={focused
                 ? "chatbubbles" : "chatbubbles"}
-                size={size}
+                size={30}
                 color={color}
               />
             );
@@ -46,7 +58,7 @@ function mainTabs() {
             return (
               <Ionicons name={focused
                 ? "settings" : "settings"}
-                size={size}
+                size={30}
                 color={color}
               />
             );
@@ -55,7 +67,7 @@ function mainTabs() {
             return (
               <FontAwesome name={focused
                 ? "address-book" : "address-book"}
-                size={size}
+                size={30}
                 color={color}
               />
             );
@@ -70,7 +82,7 @@ function mainTabs() {
     >
       <tabNav.Screen name="contacts" component={contactStack} />
       <tabNav.Screen name="chats" component={ChatsScreen} />
-      <tabNav.Screen name="settings" component={SettingsScreen} />
+      <tabNav.Screen name="settings" component={settingStack} />
     </tabNav.Navigator>
 
   )
@@ -80,7 +92,7 @@ export default class App extends Component {
   render() {
     return (
       <NavigationContainer>
-        <stackNav.Navigator initialRouteName="login">
+        <stackNav.Navigator initialRouteName="main">
           <stackNav.Screen name="signup" component={SignUpscreen} options={{ headerShown: false }} />
           <stackNav.Screen name="login" component={LogInscreen} options={{ headerShown: false }} />
           <stackNav.Screen name="main" component={mainTabs} options={{ headerShown: false }} />
