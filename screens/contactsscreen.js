@@ -229,6 +229,7 @@ export default class ContactsScreen extends Component {
                             onPress={() => this.blockContact(item)}>
                             <Ionicons name="block" size={15} color="#CC0000" />
                         </TouchableOpacity>
+                        
                     </View>
 
                     <View style={styles.space}>
@@ -295,7 +296,7 @@ export default class ContactsScreen extends Component {
                     <View style={styles.headerCon}>
                         <TextInput
                             id="searchValue"
-                            placeholder="Search Contacts"
+                            placeholder="Search for New Contacts"
                             placeholderTextColor={"#C0C0C0"}
                             onChangeText={(text) => this.setState({ searchedValue: text })}
                             onChange={() => this.searchFunction(this.state.searchedValue)}
@@ -315,6 +316,7 @@ export default class ContactsScreen extends Component {
                             <FlatList
                                 data={this.state.contacts}
                                 renderItem={this.contactItem}
+                                ListHeaderComponent={()=><Text style={styles.formSubtitle}> Contact List </Text>}
                                 ListEmptyComponent={<Text style={styles.formText}>No Contacts Found</Text>}
                             />
                         )
@@ -374,6 +376,7 @@ const styles = StyleSheet.create
             width: "90%",
             marginLeft: 17,
             height: 510,
+            
         },
         header:
         {
@@ -388,6 +391,14 @@ const styles = StyleSheet.create
             justifyContent: "space-around",
             alignItems: "center",
 
+        },
+        formSubtitle:
+        {
+            fontSize: 16,
+            color: '#5A5A5A',
+            fontWeight: 'bold',
+            marginLeft: 5, 
+            padding: 10,
         },
         formAppTitle:
         {
