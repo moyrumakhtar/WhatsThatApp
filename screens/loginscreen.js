@@ -49,7 +49,9 @@ export default class LogInscreen extends Component {
                 const data = await serverOutput.json();
                 console.log("LOGIN SUCCESSFULLY");
                 const session_token = data.token;
-                this.setState({ id: data.user_id });
+                const user = data.id; 
+                const password = this.state.pWord;
+                //this.setState({ id: data.id });
 
                 if (!session_token) {
                     console.log("SESSION TOKEN NOT FOUND");
@@ -57,8 +59,11 @@ export default class LogInscreen extends Component {
                 }
                 else {
                     try {
+
                         await AsyncStorage.setItem("session_token", session_token);
-                        await AsyncStorage.setItem("user_id", this.state.id.toString());
+                        await AsyncStorage.setItem("current_id", user.toString());
+                        await AsyncStorage.setItem("current_password", password)
+                        
                     } catch (message) {
 
                         console.error("ERROR", message);
@@ -117,7 +122,7 @@ export default class LogInscreen extends Component {
                                 onChangeText={pWord => this.setState({ pWord })}
                                 defaultValue={this.state.pWord}
                                 style={styles.input}
-                                secureTextEntry
+                               secureTextEntry 
                             />
 
                             <TouchableOpacity onPress={this.loginrequest}>

@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import appHeader from '../images/header.jpg';
 import { logOut } from "../request/logout"
 
@@ -11,16 +13,16 @@ export default class SettingsScreen extends Component {
 
         this.state = {
             currentUser: null, fName: "", sName: "",
-            eMail: "", pWord: "",
+            eMail: "", pWord: "", profileReady: true, fullName: "",
         }
     }
 
-    loadProfile = async (item) => {
+    loadProfile = async () => {
+        const current_id = await AsyncStorage.getItem("current_id");
         const session_token = await AsyncStorage.getItem("session_token");
-        const id = item.user_id;
-
+        console.log(current_id)
         try {
-            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${id}`, {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${current_id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -30,7 +32,13 @@ export default class SettingsScreen extends Component {
 
             if (serverOutput.status === 200) {
                 const data = await serverOutput.json();
-                this.setState({ currentUser: data });
+                this.setState({
+                    currentUser: data,
+                    fName: data.first_name,
+                    lName: data.last_name,
+                    eMail: data.email,
+                    fullName: data.first_name + " " + data.last_name
+                });
                 console.log("LOADED PROFILE");
             }
             else if (serverOutput.status === 401) {
@@ -44,58 +52,6 @@ export default class SettingsScreen extends Component {
         } catch (message) {
             console.error("ERROR:", message);
         }
-    }
-
-    editProfile = async (item) => {
-        const session_token = await AsyncStorage.getItem("session_token");
-        const id = item.user_id;
-
-        try {
-            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Authorization': session_token,
-                },
-                body: JSON.stringify(
-                    {
-                        first_name: this.state.fName,
-                        last_name: this.state.sName,
-                        email: this.state.eMail,
-                        password: this.state.pWord,
-                    }
-                ),
-            });
-
-            if (serverOutput.status === 200) {
-                const data = await serverOutput.json();
-                this.setState({ currentUser: data });
-                console.log("UPDATED PROFILE");
-            }
-            else if (serverOutput.status === 400) {
-                console.log("BAD REQUEST");
-                this.setState({ message: "BAD REQUES, LOG IN" });
-            }
-            else if (serverOutput.status === 401) {
-                console.log("UNAUTHORISED");
-                this.setState({ message: "UNAUTHORISED, LOG IN" });
-            }
-            else if (serverOutput.status === 403) {
-                console.log("FORBIDDEN");
-                this.setState({ message: "FORBIDDEN, UNABLE TO UPDATE" });
-            }
-            else if (serverOutput.status === 404) {
-                console.log("INVALID USER");
-                this.setState({ message: "INVALID, USER NOT FOUND" });
-            }
-            else {
-                console.log("SERVER ERROR");
-                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
-            }
-        } catch (message) {
-            console.error("ERROR:", message);
-        }
-
     }
 
     logOutUser = async () => {
@@ -118,7 +74,12 @@ export default class SettingsScreen extends Component {
     };
 
     render() {
+        if (this.state.profileReady === true) {
+            this.loadProfile();
+            this.setState({ profileReady: false });
+        }
         return (
+
             <View>
                 <img
                     id="appHeader"
@@ -134,11 +95,20 @@ export default class SettingsScreen extends Component {
                             </TouchableOpacity>
                             <Text style={styles.formAppTitle}> Setting </Text>
                             <TouchableOpacity
-                               onPress={() => this.toEdit()}>
+                                onPress={() => this.toEdit()}>
                                 <Feather name="edit" size={25} color="#0f3d0f" />
                             </TouchableOpacity>
                         </View>
                     </View>
+
+                    <Text style={styles.formText}> Profile Picture: </Text>
+                    {/* insert picture display here */}
+                    
+                    <Text style={styles.formText}> Name: </Text>
+                    <Text style={styles.input}> {this.state.fullName} </Text>
+                    <Text style={styles.formText}> Email Address: </Text>
+                    <Text style={styles.input}> {this.state.eMail} </Text>
+
 
                     <TouchableOpacity
                         onPress={() => this.logOutUser()}>
@@ -188,22 +158,22 @@ const styles = StyleSheet.create
             color: '#34633E',
             fontWeight: 'bold',
         },
-        container: 
+        container:
         {
-            height: 680,
 
         },
         input:
         {
-            borderBottomColor: '#14c83c',
+            borderBottomColor: '#C0C0C0',
             borderBottomWidth: 2,
             padding: 8,
-            margin: 40,
-            marginBottom: 30,
+            margin: 50,
+            marginBottom: 10,
             marginTop: 5,
             fontSize: 13,
-            color: '#34633E',
+            color: '#C0C0C0',
             fontWeight: 'bold',
+            width: 300,
 
         },
         button:
@@ -216,7 +186,7 @@ const styles = StyleSheet.create
             marginLeft: 25,
             bottom: 0,
             margin: 20,
- 
+
         },
         buttonText: {
             textAlign: "center",
@@ -264,12 +234,12 @@ const styles = StyleSheet.create
             flexDirection: "row",
             justifyContent: "space-around",
             alignItems: "center",
-             
-            
 
         },
-        absoluteOpacity:
+        textCon:
         {
+            flex: 1,
+            flexDirection: "row",
 
         },
     });
