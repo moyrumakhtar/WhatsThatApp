@@ -57,7 +57,7 @@ export default class LogInscreen extends Component {
                 }
                 else {
                     try {
-                        await AsyncStorage.setItem("session_token", session);
+                        await AsyncStorage.setItem("session_token", session_token);
                         await AsyncStorage.setItem("user_id", this.state.id.toString());
                     } catch (message) {
 
