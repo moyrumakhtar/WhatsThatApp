@@ -20,7 +20,7 @@ const stackNav = createNativeStackNavigator();
 function settingStack() {
   return (
     <stackNav.Navigator
-    initialRouteName="edit">
+    initialRouteName="setting">
       <stackNav.Screen name="settings" component={SettingsScreen} options={{ headerShown: false }}/>
       <stackNav.Screen name="edit" component={Editscreen} options={{ headerShown: false }}/>
     </stackNav.Navigator>
@@ -41,7 +41,7 @@ function mainTabs() {
   return (
 
     <tabNav.Navigator 
-      initialRouteName="settings"
+      initialRouteName="setting"
       screenOptions={({ route }) => ({
         tabBarStyle: { height: 70 },
         tabBarIcon: ({ focused, color, size }) => {

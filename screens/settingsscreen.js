@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+
 import Feather from "react-native-vector-icons/Feather";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 import appHeader from '../images/header.jpg';
 import { logOut } from "../request/logout"
@@ -70,8 +72,11 @@ export default class SettingsScreen extends Component {
         this.props.navigation.navigate("login");
     };
     toEdit = () => {
+        this.setState({ profileReady: true });
         this.props.navigation.navigate("edit");
     };
+
+   
 
     render() {
         if (this.state.profileReady === true) {
@@ -90,8 +95,9 @@ export default class SettingsScreen extends Component {
 
                     <View style={styles.header}>
                         <View style={styles.headerCon}>
-                            <TouchableOpacity>
-                                <Feather name="edit" size={25} color="#f2f2f2" />
+                            <TouchableOpacity
+                                onPress={() => this.loadProfile()}>
+                                <Feather name="refresh-ccw" size={25} color="#0f3d0f" />
                             </TouchableOpacity>
                             <Text style={styles.formAppTitle}> Setting </Text>
                             <TouchableOpacity
@@ -108,7 +114,6 @@ export default class SettingsScreen extends Component {
                     <Text style={styles.input}> {this.state.fullName} </Text>
                     <Text style={styles.formText}> Email Address: </Text>
                     <Text style={styles.input}> {this.state.eMail} </Text>
-
 
                     <TouchableOpacity
                         onPress={() => this.logOutUser()}>

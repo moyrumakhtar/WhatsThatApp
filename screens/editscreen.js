@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-nativ
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Icon from "react-native-vector-icons/Fontisto";
+import SettingsScreen from "./settingsscreen";
 
 import appHeader from '../images/header.jpg';
 
@@ -11,20 +12,38 @@ export default class Editscreen extends Component {
         super(props);
 
         this.state = {
-            currentUser: null, fName: "", sName: "", message: "",
-            eMail: "", pWord: "", editReady: true, validPass: false,
-            nWord: "", new: false
+            fName: "", sName: "", eMail: "",
+            message: "", pWord: "", profileReady: true,
+            dfName: "", dsName: "", deMail: "",
         }
     }
 
+    clearData = () => {
+        this.setState({
+            fName: this.state.dfName,
+            sName: this.state.dsName,
+            eMail: this.state.deMail,
+            profileReady: true,
+        });
+    }
+
     toSetting = () => {
-        this.props.navigation.navigate("settings");
+      this.props.navigation.navigate("settings");
     };
+
+    cancelEdit = () => {
+        this.clearData();
+        console.log("CLEARED")
+        this.props.navigation.navigate("settings");
+    }
 
     loadProfile = async () => {
         const current_id = await AsyncStorage.getItem("current_id");
         const session_token = await AsyncStorage.getItem("session_token");
         console.log(current_id)
+
+        this.setState({ message: " " })
+
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${current_id}`, {
                 method: 'GET',
@@ -37,12 +56,15 @@ export default class Editscreen extends Component {
             if (serverOutput.status === 200) {
                 const data = await serverOutput.json();
                 this.setState({
-                    currentUser: data,
                     fName: data.first_name,
                     sName: data.last_name,
                     eMail: data.email,
+                    dfName: data.first_name,
+                    dsName: data.last_name,
+                    deMail: data.email,
+
                 });
-                console.log("EDIT PROFILE");
+                console.log("LOAD PROFILE");
 
             }
             else if (serverOutput.status === 401) {
@@ -54,14 +76,13 @@ export default class Editscreen extends Component {
                 this.setState({ message: "SERVER ERROR, TRY AGAIN" });
             }
         } catch (message) {
-            console.error("ERROR:", message);
+
         }
     }
 
     editProfile = async () => {
         const current_id = await AsyncStorage.getItem("current_id");
         const session_token = await AsyncStorage.getItem("session_token");
-        console.log(current_id)
 
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${current_id}`, {
@@ -81,9 +102,10 @@ export default class Editscreen extends Component {
             });
 
             if (serverOutput.status === 200) {
+                this.toSetting();
                 const data = await serverOutput.json();
                 this.setState({ currentUser: data });
-                console.log("UPDATED PROFILE");
+                SettingsScreen.setState({profileReady: true});
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -114,42 +136,25 @@ export default class Editscreen extends Component {
         const current_password = await AsyncStorage.getItem("current_password");
 
         if (this.state.pWord === current_password) {
-            this.setState({ validPass: true });
             this.setState({ message: "" });
             console.log("VALID PASS")
             this.editProfile();
-            // if(this.state.new === true)
-            // {
-            //     this.newPasswordEntered();
-            //     this.editProfile();
-            // } 
-            // else {
-            //     this.setState({new: pWord})
-            // }
-            
+
         }
         else {
             this.setState({ message: "INVALID PASSWORD" });
         }
     }
 
-    // newPasswordEntered = () => {
-    //     const pwordRegex = new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\W)[A-Za-z\d\W]{8,}$/);
-    //     if (!(pwordRegex.test(this.state.nWord))) {
-    //         this.setState({ message: "ENTER STRONG PASSWORD: 1 UPPERCASE, 1 LOWERCASE, 1 NUMBER, 1 SPECIAL AND 8 CHARACTERS LONG" })
-    //     }
-    // }
 
     render() {
-
-        if (this.state.editReady === true) {
+        if (this.state.profileReady === true) {
             this.loadProfile();
-            this.setState({ editReady: false });
+            this.setState({ profileReady: false });
         }
 
-        const toggleChecked = () => this.setState({ new: true});
-
         return (
+
             <View>
                 <img
                     id="appHeader"
@@ -160,11 +165,11 @@ export default class Editscreen extends Component {
                     <View style={styles.header}>
                         <View style={styles.headerCon}>
                             <TouchableOpacity>
-                                <Icon name="edit" size={25} color="#f2f2f2" />
+                                <Icon name="close" size={25} color="#f2f2f2" />
                             </TouchableOpacity>
                             <Text style={styles.formAppTitle}> Edit Profile </Text>
-                            <TouchableOpacity onPress={() => this.toSetting()}>
-                                <Icon name="close" size={25} color="#CC0000" />
+                            <TouchableOpacity>
+                                <Icon name="close" size={25} color="#f2f2f2" />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -175,20 +180,20 @@ export default class Editscreen extends Component {
 
                     <Text style={styles.formText}> First Name: </Text>
                     <TextInput
-                        onChangeText={fName => this.setState({ fName })}
-                        defaultValue={this.state.fName}
+                        onChangeText={(text) => this.setState({ fName: text })}
+                        defaultValue={this.state.dfName}
                         style={styles.input}
                     />
                     <Text style={styles.formText}> Last Name: </Text>
                     <TextInput
-                        onChangeText={sName => this.setState({ sName })}
-                        defaultValue={this.state.sName}
+                        onChangeText={(text) => this.setState({ sName: text })}
+                        defaultValue={this.state.dsName}
                         style={styles.input}
                     />
                     <Text style={styles.formText}> Email Address: </Text>
                     <TextInput
-                        onChangeText={eMail => this.setState({ eMail })}
-                        defaultValue={this.state.eMail}
+                        onChangeText={(text) => this.setState({ eMail: text })}
+                        defaultValue={this.state.deMail}
                         style={styles.input}
                     />
                     <Text style={styles.formText}> Password: </Text>
@@ -208,13 +213,13 @@ export default class Editscreen extends Component {
                         style={styles.input}
                         secureTextEntry
                     /> */}
-                   
+
                     <TouchableOpacity onPress={() => this.validatePassword()}>
                         <View style={styles.button}>
                             <Text style={styles.buttonText}>Submit </Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => this.toSetting()}>
+                    <TouchableOpacity onPress={() => this.cancelEdit()}>
                         <View>
                             <Text style={styles.formLoginText}> Cancel </Text>
                         </View>
