@@ -41,7 +41,7 @@ function mainTabs() {
   return (
 
     <tabNav.Navigator 
-      initialRouteName="setting"
+      initialRouteName="chats"
       screenOptions={({ route }) => ({
         tabBarStyle: { height: 70 },
         tabBarIcon: ({ focused, color, size }) => {

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-
 import Feather from "react-native-vector-icons/Feather";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -155,7 +154,6 @@ const styles = StyleSheet.create
         formText:
         {
             padding: 5,
-            color: 'black',
             marginTop: 0,
             margin: 40,
             marginBottom: 0,
@@ -241,10 +239,5 @@ const styles = StyleSheet.create
             alignItems: "center",
 
         },
-        textCon:
-        {
-            flex: 1,
-            flexDirection: "row",
-
-        },
+    
     });

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, PermissionsAndroid } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import appHeader from "../images/header.jpg";
@@ -15,6 +15,10 @@ export default class ContactsScreen extends Component {
             contacts: [], message: "",
             searchedContacts: [], searchedValue: "", loadReady: true,
         };
+    }
+
+    clearInput() {
+        this.setState({ searchedValue: "" });
     }
 
     loadContacts = async () => {
@@ -96,25 +100,29 @@ export default class ContactsScreen extends Component {
                     'Content-Type': 'application/json',
                     'X-Authorization': session_token,
                 },
-                body: JSON.stringify({id}),
+                body: JSON.stringify({ id }),
             });
 
             if (serverOutput.status === 200) {
                 this.loadContacts();
                 console.log("USER ADDED, ID:", id)
-            } else if (serverOutput.status === 400) {
+            } 
+            else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
                 this.setState({ message: "BAD REQUEST, CAN'T ADD YOURSELF" });
 
-            } else if (serverOutput.status === 401) {
+            } 
+            else if (serverOutput.status === 401) {
                 console.log("UNAUTHORISED");
                 this.setState({ message: "UNAUTHORISED, LOG IN" });
 
-            } else if (serverOutput.status === 404) {
+            } 
+            else if (serverOutput.status === 404) {
                 console.log("USER NOT FOUND");
                 this.setState({ message: "USER NOT FOUND, ENTER VALID ID" });
 
-            } else {
+            } 
+            else {
                 console.log("SERVER ERROR");
                 this.setState({ message: "SERVER ERROR, TRY AGAIN LATER" });
             }
@@ -134,7 +142,7 @@ export default class ContactsScreen extends Component {
                     'Content-Type': 'application/json',
                     'X-Authorization': session_token,
                 },
-                body: JSON.stringify({id}),
+                body: JSON.stringify({ id }),
             });
 
             if (serverOutput.status === 200) {
@@ -177,19 +185,23 @@ export default class ContactsScreen extends Component {
             if (serverOutput.status === 200) {
                 this.setState({ searchedContacts: data });
 
-            } else if (serverOutput.status === 400) {
+            }
+            else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
                 this.setState({ message: "BAD REQUEST, CAN'T ADD YOURSELF" });
 
-            } else if (serverOutput.status === 401) {
+            }
+            else if (serverOutput.status === 401) {
                 console.log("UNAUTHORISED");
                 this.setState({ message: "UNAUTHORISED, LOG IN" });
 
-            } else if (serverOutput.status === 404) {
+            }
+            else if (serverOutput.status === 404) {
                 console.log("USER NOT FOUND");
                 this.setState({ message: "USER NOT FOUND, ENTER VALID ID" });
 
-            } else {
+            }
+            else {
                 console.log("SERVER ERROR");
                 this.setState({ message: "SERVER ERROR, TRY AGAIN LATER" });
             }
@@ -200,7 +212,11 @@ export default class ContactsScreen extends Component {
     }
 
     searchItem = ({ item }) => {
+        if (item === null) {
+            return;
+        }
         return (
+
             <View style={styles.searchItems}>
                 <Text style={styles.searchText}>
                     {item.given_name}{" "}{item.family_name}
@@ -212,6 +228,7 @@ export default class ContactsScreen extends Component {
             </View>
         );
     };
+
 
     contactItem = ({ item }) => {
         return (
@@ -225,7 +242,7 @@ export default class ContactsScreen extends Component {
                             onPress={() => this.blockContact(item)}>
                             <Ionicons name="block" size={15} color="#CC0000" />
                         </TouchableOpacity>
-                        
+
                     </View>
 
                     <View style={styles.space}>
@@ -274,15 +291,22 @@ export default class ContactsScreen extends Component {
                         </View>
                     </View>
 
-                    <View style={styles.headerCon}>
+                    <View style={styles.headerCon1}>
                         <TextInput
+                            defaultValue={""}
                             id="searchValue"
                             placeholder="Search for New Contacts"
                             placeholderTextColor={"#C0C0C0"}
                             onChangeText={(text) => this.setState({ searchedValue: text })}
                             onChange={() => this.searchFunction(this.state.searchedValue)}
                             style={styles.input}
+
                         />
+                        <TouchableOpacity
+                            onPress={this.clearInput.bind(this)}>
+                            <Ionicons name="cross" size={15} color="#0f3d0f" />
+                        </TouchableOpacity>
+
                     </View>
 
                     <View style={styles.listBox}>
@@ -297,7 +321,7 @@ export default class ContactsScreen extends Component {
                             <FlatList
                                 data={this.state.contacts}
                                 renderItem={this.contactItem}
-                                ListHeaderComponent={()=><Text style={styles.formSubtitle}> Contact List </Text>}
+                                ListHeaderComponent={() => <Text style={styles.formSubtitle}> Contact List </Text>}
                                 ListEmptyComponent={<Text style={styles.formText}>No Contacts Found</Text>}
                             />
                         )
@@ -338,7 +362,7 @@ const styles = StyleSheet.create
             padding: 5,
             color: 'black',
             marginTop: 5,
-            margin: 30,
+            margin: 20,
             marginBottom: 0,
             fontSize: 13,
             color: '#34633E',
@@ -357,12 +381,12 @@ const styles = StyleSheet.create
             width: "90%",
             marginLeft: 17,
             height: 510,
-            
+            alignSelf: "center"
+
         },
         header:
         {
-            flex: 1,
-            justifyContent: "center",
+
             alignItems: "center"
         },
         headerCon:
@@ -372,13 +396,25 @@ const styles = StyleSheet.create
             justifyContent: "space-around",
             alignItems: "center",
 
+
+        },
+        headerCon1:
+        {
+            width: "90%",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            alignSelf: "center",
+            borderBottomColor: '#34633E',
+            borderBottomWidth: 2,
+
         },
         formSubtitle:
         {
             fontSize: 16,
             color: '#5A5A5A',
             fontWeight: 'bold',
-            marginLeft: 5, 
+            marginLeft: 5,
             padding: 10,
         },
         formAppTitle:
@@ -403,16 +439,21 @@ const styles = StyleSheet.create
             fontWeight: 'bold',
             textAlign: "center"
         },
+        button: {
+            backgroundColor: '#34633E',
+            padding: 5,
+            paddingLeft:10,
+            paddingRight:10,
+
+        },
         input: {
-            borderBottomColor: '#34633E',
-            borderBottomWidth: 2,
             padding: 8,
             fontSize: 13,
             color: '#34633E',
             fontWeight: 'bold',
             marginTop: 10,
-            width: "90%",
-            marginRight: 5,
+            width: "100%",
+            marginRight: 0,
 
         },
         formLoginText:
@@ -432,5 +473,9 @@ const styles = StyleSheet.create
             fontWeight: 'bold',
             margin: 10,
         },
+        container:
+        {
+
+        }
 
     });
