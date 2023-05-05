@@ -78,6 +78,7 @@ export default class SettingsScreen extends Component {
    
 
     render() {
+        
         if (this.state.profileReady === true) {
             this.loadProfile();
             this.setState({ profileReady: false });

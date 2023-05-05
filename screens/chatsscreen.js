@@ -15,6 +15,7 @@ export default class Chatsscreen extends Component {
         this.state = {
             chats: [], AddChat: false, chatName: "",
             chatReady: true, UpdateChat: false, chatID: "", newName: "",
+    
 
         }
     }
@@ -24,9 +25,10 @@ export default class Chatsscreen extends Component {
         this.setState({ message: "" });
     }
 
-    UpdateChatToggle = () => {
+    UpdateChatToggle = ( ) => {
         this.setState(({ UpdateChat }) => ({ UpdateChat: !UpdateChat }));
         this.setState({ message: "" });
+
     }
 
 
@@ -103,6 +105,7 @@ export default class Chatsscreen extends Component {
         const session_token = await AsyncStorage.getItem("session_token");
         const name = this.state.newName;
         const id = this.state.chatID;
+        console.log(id)
 
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/chat/${id}`, {
@@ -149,31 +152,31 @@ export default class Chatsscreen extends Component {
 
     }
 
-    chatItems = ({ item }) => {
+    // chatItems = ({ item }) => {
 
-        this.setState({chatID: item.chat_id});
+    //     this.setState({ chatID: item.chat_id });
 
-        return (
+    //     return (
 
-            <View style={styles.chatItem}>
-                <Text style={styles.chatText}>
-                    {item.name}
-                </Text>
+    //         <View style={styles.chatItem}>
+    //             <Text style={styles.chatText}>
+    //                 {item.name}
+    //             </Text>
 
-                <View style={styles.buttonControl}>
+    //             <View style={styles.buttonControl}>
 
-                    <View style={styles.space}>
-                        <TouchableOpacity onPress={() => this.UpdateChatToggle()} >
-                            <Feather name="edit" size={15} color="#0f3d0f" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
+    //                 <View style={styles.space}>
+    //                     <TouchableOpacity onPressIn={() => this.handleEditChat()}>
+    //                         <Feather name="edit" size={15} color="#0f3d0f" />
+    //                     </TouchableOpacity>
+    //                 </View> 
+    //             </View>
 
-            </View>
+    //         </View>
 
 
-        );
-    };
+    //     );
+    // };
 
     validInput = () => {
 
@@ -184,21 +187,24 @@ export default class Chatsscreen extends Component {
             this.startChat();
         }
     }
+
     validNewInput = () => {
 
-        // if (!(this.state.newName)) {
-        //     this.setState({ message: "ENTER CHAT NAME" });
-        // }
-        // else {
-        //     this.editChat();
-        // }
+        if (!(this.state.newName)) {
+            this.setState({ message: "ENTER CHAT NAME" });
+        }
+        else {
+            this.editChat();
+        }
     }
 
     render() {
+
         if (this.state.chatReady === true) {
             this.loadChats();
             this.setState({ chatReady: false });
         }
+
         return (
             <View>
                 <img
@@ -219,7 +225,7 @@ export default class Chatsscreen extends Component {
                         </View>
                     </View>
 
-                    <View style={styles.listBox}>
+                    {/* <View style={styles.listBox}>
                         {this.state.chats.length > 0 ? (
 
                             <FlatList
@@ -238,6 +244,40 @@ export default class Chatsscreen extends Component {
                             />
                         )
                         }
+                    </View> */}
+
+                    <View style={styles.listBox}>
+                        <FlatList
+                            data={this.state.chats}
+                            renderItem={({ item }) => (
+
+                                <View style={styles.chatItem}>
+                                    <Text style={styles.chatText}>
+                                        {item.name}
+                                    </Text>
+                                    <View style={styles.buttonControl}>
+
+                                        <View style={styles.space}>
+                                            <TouchableOpacity onPress={() => {
+                                                this.setState({
+                                                    chatID: item.chat_id,
+                                                    UpdateChat: true
+                                                })
+                                            }}>
+                                                
+                                                {/* </View>this.UpdateChatToggle()}> */}
+                                                <Feather name="edit" size={15} color="#0f3d0f" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+
+                                </View>
+
+
+                            )}
+                        />
+
                     </View>
 
                 </View>
@@ -289,9 +329,42 @@ export default class Chatsscreen extends Component {
                     transparent={true}
                     animationType="slide"
                     visible={this.state.UpdateChat}
-                    onRequestClose={this.UpdateChatToggle}
-                >
-                    
+                    onRequestClose={this.UpdateChatToggle}>
+
+                    <View style={styles.modalCon}>
+                        <View style={styles.modal}>
+
+                            <View style={styles.header}>
+                                <View style={styles.headerCon}>
+                                    <Text style={styles.formAppTitleModal}> Update Chat Name  </Text>
+                                    <TouchableOpacity
+                                        onPress={() => this.UpdateChatToggle()}>
+                                        <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <View styles={styles.headerCon1}>
+                                <TextInput
+                                    defaultValue={""}
+                                    id="chatNewValue"
+                                    placeholder="Enter New Name"
+                                    placeholderTextColor={"#C0C0C0"}
+                                    onChangeText={(text) => this.setState({ newName: text })}
+                                    style={styles.input}
+
+                                />
+
+                                <TouchableOpacity
+                                    onPress={() => this.validNewInput()}>
+                                    <View style={styles.button}>
+                                        <Text style={styles.buttonText}> Update </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+
                 </Modal>
 
                 <>
