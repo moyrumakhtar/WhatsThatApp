@@ -32,7 +32,7 @@ function chatStack () {
 function settingStack() {
   return (
     <stackNav.Navigator
-    initialRouteName="setting">
+    initialRouteName="settings">
       <stackNav.Screen name="settings" component={SettingsScreen} options={{ headerShown: false }}/>
       <stackNav.Screen name="edit" component={Editscreen} options={{ headerShown: false}}/>
     </stackNav.Navigator>

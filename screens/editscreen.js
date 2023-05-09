@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -8,6 +8,7 @@ import SettingsScreen from "./settingsscreen";
 import appHeader from '../images/header.jpg';
 
 export default class Editscreen extends Component {
+
     constructor(props) {
         super(props);
 
@@ -15,8 +16,11 @@ export default class Editscreen extends Component {
             fName: "", sName: "", eMail: "",
             message: "", pWord: "", profileReady: true,
             dfName: "", dsName: "", deMail: "",
+            image: null,
         }
+
     }
+
 
     clearData = () => {
         this.setState({
@@ -28,7 +32,7 @@ export default class Editscreen extends Component {
     }
 
     toSetting = () => {
-      this.props.navigation.navigate("settings");
+        this.props.navigation.navigate("settings");
     };
 
     cancelEdit = () => {
@@ -105,7 +109,7 @@ export default class Editscreen extends Component {
                 this.toSetting();
                 const data = await serverOutput.json();
                 this.setState({ currentUser: data });
-                SettingsScreen.setState({profileReady: true});
+                SettingsScreen.setState({ profileReady: true });
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -132,6 +136,55 @@ export default class Editscreen extends Component {
         }
     }
 
+    setProfilePicture = async (e) => {
+        const current_id = await AsyncStorage.getItem("current_id");
+        const session_token = await AsyncStorage.getItem("session_token");
+        
+        const profileData = e.target.files[0]
+
+        const res = await fetch(e.target.files[0].uri)
+        const blob = await res.blob()
+
+        try {
+             fetch(`http://localhost:3333/api/1.0.0/user/${current_id}/photo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'image/png',
+                    'X-Authorization': session_token,
+                },
+                body: blob,
+            })   
+
+            if (serverOutput.status === 200) {
+                const data = await serverOutput.json();
+                this.setState({ currentUser: data });
+            }
+            else if (serverOutput.status === 400) {
+                console.log("BAD REQUEST");
+                this.setState({ message: "BAD REQUEST" });
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+            }
+            else if (serverOutput.status === 403) {
+                console.log("FORBIDDEN");
+                this.setState({ message: "FORBIDDEN, UNABLE TO UPDATE" });
+            }
+            else if (serverOutput.status === 404) {
+                console.log("INVALID USER");
+                this.setState({ message: "INVALID, USER NOT FOUND" });
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
+            }
+        } catch (message) {
+
+        }
+
+    }
+
     validatePassword = async () => {
         const current_password = await AsyncStorage.getItem("current_password");
 
@@ -146,7 +199,13 @@ export default class Editscreen extends Component {
         }
     }
 
+    handleFileInputChange = (e) => {
+        this.setState({image: (e.target.files[0])});
+        console.log(e.target.files[0])
+       
+    };
 
+   
     render() {
         if (this.state.profileReady === true) {
             this.loadProfile();
@@ -176,7 +235,11 @@ export default class Editscreen extends Component {
 
 
                     <Text style={styles.formText}> Profile Picture: </Text>
-                    {/* insert picture display here */}
+
+                    <View style={styles.image}>
+                        <input id="imgs" type="file" accept="image/png, image/jpeg," onChange={this.setProfilePicture} />
+                    </View>
+
 
                     <Text style={styles.formText}> First Name: </Text>
                     <TextInput
@@ -204,16 +267,6 @@ export default class Editscreen extends Component {
                         style={styles.input}
                         secureTextEntry
                     />
-                    {/* <Text style={styles.formText}> New Password: </Text>
-                    <TextInput
-                        onChangeText={(text) => this.setState({ nWord: text })}
-                        onChange={toggleChecked}
-                        placeholder="New Password"
-                        placeholderTextColor={"#C0C0C0"}
-                        style={styles.input}
-                        secureTextEntry
-                    /> */}
-
                     <TouchableOpacity onPress={() => this.validatePassword()}>
                         <View style={styles.button}>
                             <Text style={styles.buttonText}>Submit </Text>
@@ -241,6 +294,10 @@ export default class Editscreen extends Component {
 
 const styles = StyleSheet.create
     ({
+        image:
+        {
+            alignItems: "center"
+        },
         formAppTitle:
         {
             marginLeft: 65,

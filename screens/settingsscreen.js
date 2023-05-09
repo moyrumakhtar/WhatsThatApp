@@ -15,6 +15,7 @@ export default class SettingsScreen extends Component {
         this.state = {
             currentUser: null, fName: "", sName: "",
             eMail: "", pWord: "", profileReady: true, fullName: "",
+            image: null
         }
     }
 
@@ -31,7 +32,7 @@ export default class SettingsScreen extends Component {
     loadProfile = async () => {
         const current_id = await AsyncStorage.getItem("current_id");
         const session_token = await AsyncStorage.getItem("session_token");
-        console.log(current_id)
+ 
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${current_id}`, {
                 method: 'GET',
@@ -51,6 +52,8 @@ export default class SettingsScreen extends Component {
                     fullName: data.first_name + " " + data.last_name
                 });
                 console.log("LOADED PROFILE");
+
+                this.getPicture()
             }
             else if (serverOutput.status === 401) {
                 console.log("UNAUTHORISED");
@@ -65,11 +68,54 @@ export default class SettingsScreen extends Component {
         }
     }
 
+    getPicture = async () => {
+        const current_id = await AsyncStorage.getItem("current_id");
+        const session_token = await AsyncStorage.getItem("session_token");
+
+        try {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${current_id}/photo`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'image/png',
+                    'X-Authorization': session_token,
+                }
+            });
+
+            if (serverOutput.status === 200) {
+                const data = await serverOutput.blob();
+
+                this.setState({
+                    image: URL.createObjectURL(data),
+                });
+
+                console.log("LOADED PICTURE");
+
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+            }
+            else if (serverOutput.status === 404) {
+                console.log("NOT FOUND");
+                this.setState({ message: "NOT FOUND, LOG IN" });
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
+            }
+        } catch (message) {
+            console.error("ERROR:", message);
+        }
+    }
+
+
+
     logOutUser = async () => {
         try {
             const serverOutput = await logOut();
             if (serverOutput === 200) {
-                await AsyncStorage.removeItem("session_token");
+                await AsyncStorage.removeItem("session_token")
+                await AsyncStorage.removeItem("current_id");
             }
             this.tologIn();
         } catch (message) {
@@ -118,7 +164,7 @@ export default class SettingsScreen extends Component {
                     </View>
 
                     <Text style={styles.formText}> Profile Picture: </Text>
-                    {/* insert picture display here */}
+                    <img id="PP" src={this.state.image} style={{alignSelf: "center", margin:20}}/>
                     
                     <Text style={styles.formText}> Name: </Text>
                     <Text style={styles.input}> {this.state.fullName} </Text>
