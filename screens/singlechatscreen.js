@@ -95,7 +95,7 @@ export default class SingleChatScreen extends Component {
 
             if (serverOutput.status === 200) {
                 this.setState({ chatName: name })
-                this.UpdateChatToggle();
+                this.setState({ message: "UPDATED CHAT" });
                 console.log("UPDATED CHAT");
             }
             else if (serverOutput.status === 400) {
@@ -144,6 +144,7 @@ export default class SingleChatScreen extends Component {
 
             if (serverOutput.status === 200) {
                 this.getChat();
+                this.setState({ message: "USER ADDED" });
                 console.log("USER ADDED")
             }
             else if (serverOutput.status === 400) {
@@ -187,6 +188,7 @@ export default class SingleChatScreen extends Component {
 
             if (serverOutput.status === 200) {
                 this.getChat();
+                this.setState({ message: "USER REMOVED" });
                 console.log("USER REMOVED")
 
             }
@@ -307,54 +309,83 @@ export default class SingleChatScreen extends Component {
                     id="appHeader"
                     src={appHeader} className="appHeader"
                 />
-                <View>
+                <View style={styles.container}>
+                    <View style={{ justifyContent: 'space-around' }}>
 
-                    <View style={styles.header}>
-                        <View style={styles.headerCon}>
-                            <TouchableOpacity>
-                                <Ionicons name="md-close-sharp" size={34} color="#e0e0e0" />
-                            </TouchableOpacity>
-                            <Text style={styles.formAppTitle}> {this.state.chatName} </Text>
-                            <TouchableOpacity onPress={() => this.toChats()}>
-                                <Ionicons name="md-close-sharp" size={34} color="#CC0000" />
-                            </TouchableOpacity>
+
+                        <View style={styles.header}>
+                            <View style={styles.headerCon}>
+                                <TouchableOpacity>
+                                    <Ionicons name="md-close-sharp" size={34} color="#e0e0e0" />
+                                </TouchableOpacity>
+                                <Text style={styles.formAppTitle}> {this.state.chatName} </Text>
+                                <TouchableOpacity onPress={() => this.toChats()}>
+                                    <Ionicons name="md-close-sharp" size={34} color="#CC0000" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
 
-                    <View style={styles.headerSub}>
-                        <View style={styles.headerConSub}>
-                            <TouchableOpacity onPress={() => {
-                                this.setState({
-                                    UpdateChat: true
-                                })
-                            }}>
-                                <Feather name="edit" size={20} color="#0f3d0f" />
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => {
-                                this.setState({
-                                    addUser: true
-                                })
-                            }}>
-                                <Ionicons name="md-person-add" size={20} color="#14c83c" />
-                            </TouchableOpacity>
+                        <View style={styles.headerSub}>
+                            <View style={styles.headerConSub}>
+                                <TouchableOpacity onPress={() => {
+                                    this.setState({
+                                        UpdateChat: true
+                                    })
+                                }}>
+                                    <Feather name="edit" size={20} color="#0f3d0f" />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => {
+                                    this.setState({
+                                        addUser: true
+                                    })
+                                }}>
+                                    <Ionicons name="md-person-add" size={20} color="#14c83c" />
+                                </TouchableOpacity>
 
+                            </View>
                         </View>
-                    </View>
 
-                    <KeyboardAvoidingView>
-                        {this.state.pastMessages.length > 0 ? (
-                            <FlatList
-                                data={this.state.pastMessages.messages}
-                                renderItem={this.messageItem}
-                            />
-                        ) : (
-                            <FlatList
-                                data={this.state.pastMessages.messages}
-                                ListEmptyComponent={<Text style={styles.formText}>No Messages</Text>}
-                            />
-                        )
-                        }
-                    </KeyboardAvoidingView>
+                        <KeyboardAvoidingView>
+                            <View style={styles.message}>
+
+
+                                <FlatList
+                                    data={this.state.pastMessages.messages}
+                                    ListEmptyComponent={<Text style={styles.formText}>No Messages</Text>}
+                                    renderItem={this.messageItem}
+                                    style={styles.flat}
+
+                                    
+                                />
+                                <>
+                    {this.state.message &&
+                        <Text style={styles.message1}>{this.state.message}</Text>
+                    }
+                </>
+                            </View>
+                            <View style={styles.bottom}>
+                                <View style={styles.messageInput}>
+                                    <TextInput
+
+                                        defaultValue={""}
+                                        id="message"
+                                        placeholder="Enter Message"
+                                        placeholderTextColor={"#C0C0C0"}
+                                        onChangeText={(text) => this.setState({ newMessage: text })}
+                                        //onChange={() => this.searchFunction(this.state.searchedValue)}
+                                        style={styles.input}
+                                    />
+
+                                    <TouchableOpacity>
+                                        <Ionicons name="send" size={25} color="#0f3d0f" />
+                                    </TouchableOpacity>
+
+                                </View>
+                            </View>
+
+
+                        </KeyboardAvoidingView>
+                    </View>
                 </View>
 
                 <Modal
@@ -383,7 +414,7 @@ export default class SingleChatScreen extends Component {
                                     placeholder="Enter New Name"
                                     placeholderTextColor={"#C0C0C0"}
                                     onChangeText={(text) => this.setState({ newName: text })}
-                                    style={styles.input}
+                                    style={styles.input1}
 
                                 />
 
@@ -431,7 +462,7 @@ export default class SingleChatScreen extends Component {
                                     placeholder="Enter User ID"
                                     placeholderTextColor={"#C0C0C0"}
                                     onChangeText={(text) => this.setState({ newPID: text })}
-                                    style={styles.input}
+                                    style={styles.input1}
                                 />
                                 <TouchableOpacity
                                     onPress={() => this.validUserInput()}>
@@ -445,12 +476,6 @@ export default class SingleChatScreen extends Component {
 
                 </Modal>
 
-                <>
-                    {this.state.message &&
-                        <Text style={styles.message}>{this.state.message}</Text>
-                    }
-                </>
-
             </View>
 
 
@@ -462,6 +487,10 @@ export default class SingleChatScreen extends Component {
 
 const styles = StyleSheet.create
     ({
+        flat: {
+            height: 475,
+            flexGrow: 0
+          },
         formSubtitle:
         {
             fontSize: 16,
@@ -472,8 +501,8 @@ const styles = StyleSheet.create
         },
         headerSub:
         {
-            flex: 1,
             alignItems: "center",
+      
         },
         headerConSub:
         {
@@ -484,13 +513,11 @@ const styles = StyleSheet.create
             padding: 10,
             paddingRight: 35,
             paddingLeft: 35,
-            marginTop: 10,
             backgroundColor: "#ededed"
         },
         header:
         {
-            flex: 1,
-            alignItems: "center"
+            alignItems: "center",
         },
         headerCon:
         {
@@ -560,11 +587,33 @@ const styles = StyleSheet.create
             fontWeight: 'bold',
             alignSelf: "center",
         },
-        container: {
-            //height: 640,
+        container:
+        {
+
+        },
+        messageInput:
+        {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-evenly",
+            backgroundColor: "#ededed",
+            padding: 5,
+            borderBottomColor: '#14c83c',
+            borderBottomWidth: 2,
 
         },
         input:
+        {
+            padding: 5,
+            paddingRight: 140,
+            marginTop: 10,
+            marginBottom: 10,
+            fontSize: 13,
+            color: '#34633E',
+            fontWeight: 'bold',
+
+        },
+        input1:
         {
             borderBottomColor: '#14c83c',
             borderBottomWidth: 2,
@@ -575,7 +624,6 @@ const styles = StyleSheet.create
             fontSize: 13,
             color: '#34633E',
             fontWeight: 'bold',
-
 
         },
         button:
@@ -589,7 +637,8 @@ const styles = StyleSheet.create
 
 
         },
-        space: {
+        space:
+        {
             padding: 10,
             paddingBottom: 10,
         },
@@ -598,12 +647,24 @@ const styles = StyleSheet.create
             color: '#FFFFFF'
 
         },
-        message: {
+        message:
+        {
             color: '#CC0000',
             textAlign: 'center',
             fontSize: 13,
             fontWeight: 'bold',
             margin: 10,
+            alignSelf: "center",
+            alignItems: "flex-end"
+        },
+        message1:
+        {
+            color: '#CC0000',
+            textAlign: 'center',
+            fontSize: 13,
+            fontWeight: 'bold',
+            margin: 10,
+            marginBottom:31,
             alignSelf: "center",
             alignItems: "flex-end"
         },
@@ -639,5 +700,9 @@ const styles = StyleSheet.create
         {
             marginTop: 10,
             marginBottom: 10,
+        },
+        bottom:
+        {
+            
         },
     });
