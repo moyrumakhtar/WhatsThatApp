@@ -14,14 +14,9 @@ export default class SingleChatScreen extends Component {
         this.state = {
             pastMessages: [], message: "", chatReady: true, newName: "",
             chatName: "", newMessage: "", chatID: "", UpdateChat: false,
-            addUser: false, newPID: "", user: ""
+            addUser: false, user: "", newPID: ""
         };
     };
-
-    async componentDidMount() {
-        const user = await AsyncStorage.getItem('current_id');
-        this.setState({user});
-    }
 
     UpdateChatToggle = () => {
         this.setState(({ UpdateChat }) => ({ UpdateChat: !UpdateChat }));
@@ -38,6 +33,9 @@ export default class SingleChatScreen extends Component {
     getChat = async (limit = 25, offset = 0) => {
         const session_token = await AsyncStorage.getItem("session_token");
         const chatID = this.state.chatID;
+
+        const user = await AsyncStorage.getItem('current_id');
+        this.setState({ user });
 
         try {
             const serverOutput = await fetch(
@@ -132,7 +130,7 @@ export default class SingleChatScreen extends Component {
 
     addUser = async () => {
         const session_token = await AsyncStorage.getItem("session_token");
-        const newPID = this.state.newPID
+        const newPID = this.state.newPID;
         const chatID = this.state.chatID;
 
         try {
@@ -145,8 +143,52 @@ export default class SingleChatScreen extends Component {
             });
 
             if (serverOutput.status === 200) {
-                this.AddUserToggle();
                 this.getChat();
+                console.log("USER ADDED")
+            }
+            else if (serverOutput.status === 400) {
+                console.log("BAD REQUEST");
+                this.setState({ message: "BAD REQUEST" });
+
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+
+            }
+            else if (serverOutput.status === 404) {
+                console.log("NOT FOUND");
+                this.setState({ message: "NOT FOUND, CHAT DOESNT EXIST" });
+
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
+            }
+        } catch (message) {
+            console.error("ERROR:", message);
+        }
+
+    }
+
+    removeUser = async (item) => {
+        const session_token = await AsyncStorage.getItem("session_token");
+        const newPID = item.user_id;
+        const chatID = this.state.chatID;
+
+        try {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/user/${newPID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': session_token,
+                },
+            });
+
+            if (serverOutput.status === 200) {
+                this.getChat();
+                console.log("USER REMOVED")
+
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -204,44 +246,45 @@ export default class SingleChatScreen extends Component {
     }
 
     memberItem = ({ item }) => {
-       if(item.user_id.toString() === this.state.user) {
+        if (item.user_id.toString() === this.state.user) {
 
-        return ( 
-            
-            <View style={styles.searchItems}>
+            return (
 
-                <Text style={styles.searchTextC}>
-                    {item.first_name} {item.last_name}
-                </Text>
-                <View style={styles.space}>
-                    <TouchableOpacity>
-                        <Ionicons name="person-remove" size={15} color="#f2f2f2" />
-                    </TouchableOpacity>
+                <View style={styles.searchItems}>
+
+                    <Text style={styles.searchTextC}>
+                        {item.first_name} {item.last_name}
+                    </Text>
+                    <View style={styles.space}>
+                        <TouchableOpacity>
+                            <Ionicons name="person-remove" size={15} color="#f2f2f2" />
+                        </TouchableOpacity>
+                    </View>
+
+
                 </View>
+            );
+        }
+        else {
+            return (
+
+                <View style={styles.searchItems}>
+
+                    <Text style={styles.searchText}>
+                        {item.first_name} {item.last_name}
+                    </Text>
+                    <View style={styles.space}>
+                        <TouchableOpacity
+                            onPress={() => this.removeUser(item)}>
+                            <Ionicons name="person-remove" size={15} color="#0f3d0f" />
+                        </TouchableOpacity>
+                    </View>
 
 
-            </View>
-        );
-       }
-       else {
-        return ( 
-            
-            <View style={styles.searchItems}>
-
-                <Text style={styles.searchText}>
-                    {item.first_name} {item.last_name}
-                </Text>
-                <View style={styles.space}>
-                    <TouchableOpacity>
-                        <Ionicons name="person-remove" size={15} color="#0f3d0f" />
-                    </TouchableOpacity>
                 </View>
+            );
 
-
-            </View>
-        );
-
-       }
+        }
     }
 
     render() {
@@ -521,7 +564,7 @@ const styles = StyleSheet.create
             //height: 640,
 
         },
-        input: 
+        input:
         {
             borderBottomColor: '#14c83c',
             borderBottomWidth: 2,
@@ -535,7 +578,7 @@ const styles = StyleSheet.create
 
 
         },
-        button: 
+        button:
         {
             backgroundColor: '#14c83c',
             margin: 40,
