@@ -302,22 +302,21 @@ export default class SingleChatScreen extends Component {
 
             return (
 
-                <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginTop: 5 }}>
-
-                    <View style={styles.header}>
-                        <Text style={styles.formText}>{item.message}</Text>
+                <View style={styles.myMessage}>
+                    <View style={styles.myMessageHeader}>
+                    <Text style={styles.nameText}>Me</Text> 
+                        <Text style={styles.myMessageText}>{item.message}</Text>
                     </View>
-
-
                 </View>
             );
         }
         else {
             return (
 
-                <View style={{ flexDirection: "row", justifyContent: 'flex-start', marginTop: 5 }}>
-                    <View style={styles.header}>
-                        <Text style={styles.formText}>{item.message}</Text>
+                <View style={styles.otherMessage}>
+                    <View style={styles.header1}>
+                        <Text style={styles.nameText}> {item.author.first_name}</Text> 
+                        <Text style={styles.otherMessageText}>{item.message}</Text>
                     </View>
 
                 </View>
@@ -432,15 +431,6 @@ export default class SingleChatScreen extends Component {
                                     style={styles.flat}
                                     inverted
                                     renderItem={this.messageItem}
-                                // renderItem={({ item }) => (
-
-                                //     <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginTop: 5 }}>
-                                //         <Text style={styles.formText1}>
-                                //             {item.message}
-                                //         </Text>
-                                //     </View>
-                                // )}
-
                                 />
                                 <>
                                     {this.state.message &&
@@ -570,8 +560,53 @@ export default class SingleChatScreen extends Component {
 
 const styles = StyleSheet.create
     ({
+        nameText:
+        {
+            color: '#a2a2a2',
+            fontWeight: 'bold',
+            padding: 3,
 
-
+        },
+        myMessage: 
+        {
+            flexDirection: "row", 
+            justifyContent: 'flex-end', 
+            marginTop: 5,
+            padding: 2,
+        },
+        myMessageText:
+        {
+            backgroundColor: '#14c83c',
+            padding: 10,
+            borderRadius: 10,
+            borderColor: '#14c83c',
+            marginTop: 0,
+            marginBottom: 0,
+            fontSize: 13,
+            color: '#FFFFFF',
+            fontWeight: 'bold',
+            alignSelf: "center",
+        },
+        otherMessage:
+        {
+            flexDirection: "row", 
+            justifyContent: 'flex-start', 
+            marginTop: 5,
+            padding: 2,
+        },
+        otherMessageText:
+        {
+            backgroundColor: '#e0e0e0',
+            padding: 10,
+            borderRadius: 10,
+            borderColor: '#e0e0e0',
+            marginTop: 0,
+            marginBottom: 0,
+            fontSize: 13,
+            color: '#34633E',
+            fontWeight: 'bold',
+            alignSelf: "center",
+        },
         flat: {
             height: 438,
         },
@@ -602,6 +637,14 @@ const styles = StyleSheet.create
         header:
         {
             alignItems: "center",
+        },
+        header1:
+        {
+            alignItems: "flex-start",
+        },
+        myMessageHeader:
+        {
+            alignItems: "flex-end",
         },
         headerCon:
         {
@@ -659,21 +702,10 @@ const styles = StyleSheet.create
             fontWeight: 'bold',
             marginBottom: 30,
         },
-        formText1:
-        {
-            padding: 5,
-            color: 'black',
-            marginTop: 0,
-            marginBottom: 0,
-            fontSize: 13,
-            color: '#34633E',
-            fontWeight: 'bold',
-            alignSelf: "center",
-        },
+    
         formText:
         {
             padding: 5,
-            color: 'black',
             marginTop: 0,
             margin: 40,
             marginBottom: 0,
