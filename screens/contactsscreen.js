@@ -37,6 +37,7 @@ export default class ContactsScreen extends Component {
                 const data = await serverOutput.json();
                 this.setState({ contacts: data });
                 console.log("LOADED CONTACTS");
+                this.setState({ message: " " });
             }
             else if (serverOutput.status === 401) {
                 console.log("UNAUTHORISED");
@@ -67,6 +68,7 @@ export default class ContactsScreen extends Component {
             if (serverOutput.status === 200) {
                 this.loadContacts();
                 console.log("USER DELETED, ID:", id);
+                this.setState({ message: "USER REMOVED" });
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -148,6 +150,7 @@ export default class ContactsScreen extends Component {
             if (serverOutput.status === 200) {
                 this.loadContacts();
                 console.log("USER BLOCK, ID:", id);
+                this.setState({ message: "USER BLOCKED" });
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -232,8 +235,8 @@ export default class ContactsScreen extends Component {
 
     contactItem = ({ item }) => {
         return (
-            <View style={styles.searchItems}> 
-            
+            <View style={styles.searchItems}>
+
                 <Text style={styles.searchText}>
                     {item.first_name} {item.last_name}
                 </Text>
@@ -333,7 +336,15 @@ export default class ContactsScreen extends Component {
                         }
                     </View>
 
+                    <>
+                        {this.state.message &&
+                            <Text style={styles.message}>{this.state.message}</Text>
+                        }
+                    </>
+
                 </View>
+
+
             </View>
         );
     }
@@ -479,9 +490,5 @@ const styles = StyleSheet.create
             fontWeight: 'bold',
             margin: 10,
         },
-        container:
-        {
-
-        }
 
     });

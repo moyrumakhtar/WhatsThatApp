@@ -54,7 +54,7 @@ function mainTabs()
   return (
 
     <tabNav.Navigator 
-      initialRouteName="chats"
+      initialRouteName="contacts"
       screenOptions={({ route }) => ({
         tabBarStyle: { height: 70 },
         tabBarIcon: ({ focused, color, size }) => {
@@ -105,7 +105,7 @@ export default class App extends Component {
   render() {
     return (
       <NavigationContainer>
-        <stackNav.Navigator initialRouteName="main">
+        <stackNav.Navigator initialRouteName="login">
           <stackNav.Screen name="signup" component={SignUpscreen} options={{ headerShown: false }} />
           <stackNav.Screen name="login" component={LogInscreen} options={{ headerShown: false }} />
           <stackNav.Screen name="main" component={mainTabs} options={{ headerShown: false }} />

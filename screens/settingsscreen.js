@@ -32,7 +32,7 @@ export default class SettingsScreen extends Component {
     loadProfile = async () => {
         const current_id = await AsyncStorage.getItem("current_id");
         const session_token = await AsyncStorage.getItem("session_token");
- 
+
         try {
             const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user/${current_id}`, {
                 method: 'GET',
@@ -131,10 +131,10 @@ export default class SettingsScreen extends Component {
         this.props.navigation.navigate("edit");
     };
 
-   
+
 
     render() {
-        
+
         if (this.state.profileReady === true) {
             this.loadProfile();
             this.setState({ profileReady: false });
@@ -164,8 +164,8 @@ export default class SettingsScreen extends Component {
                     </View>
 
                     <Text style={styles.formText}> Profile Picture: </Text>
-                    <img id="PP" src={this.state.image} style={{alignSelf: "center", margin:20}}/>
-                    
+                    <img id="PP" src={this.state.image} style={{ alignSelf: "center", margin: 20 }} />
+
                     <Text style={styles.formText}> Name: </Text>
                     <Text style={styles.input}> {this.state.fullName} </Text>
                     <Text style={styles.formText}> Email Address: </Text>
@@ -177,6 +177,12 @@ export default class SettingsScreen extends Component {
                             <Text style={styles.buttonText}>Logout </Text>
                         </View>
                     </TouchableOpacity>
+
+                    <>
+                        {this.state.message &&
+                            <Text style={styles.message}>{this.state.message}</Text>
+                        }
+                    </>
 
 
                 </View>
@@ -296,5 +302,5 @@ const styles = StyleSheet.create
             alignItems: "center",
 
         },
-    
+
     });

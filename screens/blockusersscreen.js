@@ -60,6 +60,7 @@ export default class BlockScreen extends Component {
             if (serverOutput.status === 200) {
                 this.loadBlocked();
                 console.log("USER BLOCKED, ID:", id);
+                this.setState({ message: "USER UNBLOCKED" });
             }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
@@ -93,9 +94,9 @@ export default class BlockScreen extends Component {
                     <View style={styles.space}>
                         <TouchableOpacity
                             onPress={() => this.unblockContact(item)}>
-                                <View style={styles.button}>
-                                    <Text style={styles.buttonText}>Unblock </Text>
-                                </View>
+                            <View style={styles.button}>
+                                <Text style={styles.buttonText}>Unblock </Text>
+                            </View>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -139,7 +140,7 @@ export default class BlockScreen extends Component {
                             <FlatList
                                 data={this.state.blocked}
                                 renderItem={this.contactItem}
-                                ListHeaderComponent={()=><Text style={styles.formSubtitle}> Blocked List </Text>}
+                                ListHeaderComponent={() => <Text style={styles.formSubtitle}> Blocked List </Text>}
                                 ListEmptyComponent={<Text style={styles.formText}> No Search Found </Text>}
 
                             />
@@ -147,12 +148,18 @@ export default class BlockScreen extends Component {
                             <FlatList
                                 data={this.state.blocked}
                                 renderItem={this.contactItem}
-                                ListHeaderComponent={()=><Text style={styles.formSubtitle}> Contact List </Text>}
+                                ListHeaderComponent={() => <Text style={styles.formSubtitle}> Contact List </Text>}
                                 ListEmptyComponent={<Text style={styles.formText}>No Blocked Contacts</Text>}
                             />
                         )
                         }
                     </View>
+
+                    <>
+                        {this.state.message &&
+                            <Text style={styles.message}>{this.state.message}</Text>
+                        }
+                    </>
 
                 </View>
 
@@ -189,14 +196,14 @@ const styles = StyleSheet.create
             width: "90%",
             marginLeft: 17,
             height: 510,
-            
+
         },
         formSubtitle:
         {
             fontSize: 16,
             color: '#5A5A5A',
             fontWeight: 'bold',
-            marginLeft: 5, 
+            marginLeft: 5,
             padding: 10,
         },
         header:
@@ -267,8 +274,8 @@ const styles = StyleSheet.create
         button: {
             backgroundColor: '#CC0000',
             padding: 5,
-            paddingLeft:10,
-            paddingRight:10,
+            paddingLeft: 10,
+            paddingRight: 10,
 
         },
         buttonText: {

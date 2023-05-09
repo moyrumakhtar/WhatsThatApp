@@ -15,14 +15,19 @@ export default class SingleChatScreen extends Component {
         this.state = {
             pastMessages: [], message: " ", chatReady: true, newName: "",
             chatName: "", newMessage: "", chatID: "", UpdateChat: false,
-            addUser: false, user: "", newPID: "", sender: false
+            addUser: false, user: "", newPID: "",
+            editMessage: "", edit: false, editMessageID: "", oldMessage: ""
         };
     };
 
     UpdateChatToggle = () => {
         this.setState(({ UpdateChat }) => ({ UpdateChat: !UpdateChat }));
         this.setState({ message: " " });
+    }
 
+    EditMessageToggle = () => {
+        this.setState(({ edit }) => ({ edit: !edit }));
+        this.setState({ message: " " });
     }
 
     AddUserToggle = () => {
@@ -263,7 +268,7 @@ export default class SingleChatScreen extends Component {
 
     }
 
-    deleteChat = async (messageID) => {
+    deleteMessage = async (messageID) => {
         const session_token = await AsyncStorage.getItem("session_token");
         const chatID = this.state.chatID;
 
@@ -307,6 +312,59 @@ export default class SingleChatScreen extends Component {
 
     }
     
+    editMessage = async () => {
+        const session_token = await AsyncStorage.getItem("session_token");
+        const chatID = this.state.chatID;
+        const message = this.state.editMessage;
+        const messageID = this.state.editMessageID
+
+        try {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message/${messageID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': session_token,
+                },
+                body: JSON.stringify({ message }),
+            });
+
+            if (serverOutput.status === 200) {
+                this.getChat();
+                console.log("MESSAGE DELETED")
+                this.setState({ message: "MESSAGE UPDATED" });
+                
+            }
+            else if (serverOutput.status === 400) {
+                console.log("BAD REQUEST");
+                this.setState({ message: "BAD REQUEST" });
+
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+
+            }
+            else if (serverOutput.status === 403) {
+                console.log("FORBIDDEN");
+                this.setState({ message: "FORBIDDEN, YOU CANT SEND MESSAGE" });
+
+            }
+            else if (serverOutput.status === 404) {
+                console.log("NOT FOUND");
+                this.setState({ message: "NOT FOUND, CHAT DOESNT EXIST" });
+
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
+            }
+        } catch (message) {
+            console.error("ERROR:", message);
+        }
+
+
+
+    }
 
     validNewInput = () => {
 
@@ -338,6 +396,16 @@ export default class SingleChatScreen extends Component {
         }
     }
 
+    validMessageEdit = () => {
+
+        if (!(this.state.editMessage)) {
+            this.setState({ message: "ENTER MESSAGE" });
+        }
+        else {
+            this.editMessage();
+        }
+    }
+
 
     toChats = () => {
         this.props.navigation.navigate("chats");
@@ -359,12 +427,19 @@ export default class SingleChatScreen extends Component {
 
                     <View style={styles.iconStuff}>
                         <View style={styles.icon1}>
-                            <TouchableOpacity>
+                            <TouchableOpacity  onPress={() => {
+                                    this.setState({
+                                        editMessageID: item.message_id,
+                                        edit: true,
+                                        oldMessage: item.message
+
+                                    })
+                                }}>
                                 <MaterialIcons name="edit" size={15} color="#a2a2a2" />
                             </TouchableOpacity>
                         </View>
                         <View style={styles.icon2}>
-                            <TouchableOpacity onPress={() => this.deleteChat(item.message_id)}>
+                            <TouchableOpacity onPress={() => this.deleteMessage(item.message_id)}>
                                 <Ionicons name="md-trash-bin" size={15} color="#a2a2a2" />
                             </TouchableOpacity>
                         </View>
@@ -527,6 +602,47 @@ export default class SingleChatScreen extends Component {
                 <Modal
                     transparent={true}
                     animationType="slide"
+                    visible={this.state.edit}
+                    onRequestClose={this.EditMessageToggle}>
+
+                    <View style={styles.modalCon}>
+                        <View style={styles.modal}>
+
+                            <View style={styles.header}>
+                                <View style={styles.headerConModal}>
+                                    <Text style={styles.formAppTitleModal}>Edit Message</Text>
+                                    <TouchableOpacity
+                                        onPress={() => this.EditMessageToggle()}>
+                                        <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <View styles={styles.headerCon1}>
+                                <TextInput
+                                    defaultValue={this.state.oldMessage}
+                                    id="chatNewValue"
+                                    placeholder="Enter New Message"
+                                    placeholderTextColor={"#C0C0C0"}
+                                    onChangeText={(text) => this.setState({ editMessage: text })}
+                                    style={styles.input1}
+
+                                />
+
+                                <TouchableOpacity
+                                    onPress={() => this.validMessageEdit()}>
+                                    <View style={styles.button}>
+                                        <Text style={styles.buttonText}> Update </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+
+                <Modal
+                    transparent={true}
+                    animationType="slide"
                     visible={this.state.UpdateChat}
                     onRequestClose={this.UpdateChatToggle}>
 
@@ -564,6 +680,7 @@ export default class SingleChatScreen extends Component {
                         </View>
                     </View>
                 </Modal>
+                
 
                 <Modal
                     transparent={true}

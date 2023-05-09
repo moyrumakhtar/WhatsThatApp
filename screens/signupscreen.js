@@ -7,7 +7,7 @@ export default class SignUpscreen extends Component {
         super(props);
 
         this.state = {
-            id: "", fName: "", sName: "", 
+            id: "", fName: "", sName: "",
             eMail: "", pWord: "", message: ""
         }
     }
@@ -41,40 +41,43 @@ export default class SignUpscreen extends Component {
         else if (!(pwordRegex.test(this.state.pWord))) {
             this.setState({ message: "ENTER STRONG PASSWORD: 1 UPPERCASE, 1 LOWERCASE, 1 NUMBER, 1 SPECIAL AND 8 CHARACTERS LONG" })
         }
+        else {
+            try {
+                const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(
+                        {
+                            first_name: this.state.fName,
+                            last_name: this.state.sName,
+                            email: this.state.eMail,
+                            password: this.state.pWord,
+                        }
+                    ),
+                });
 
-        try {
-            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(
-                    {
-                        first_name: this.state.fName,
-                        last_name: this.state.sName,
-                        email: this.state.eMail,
-                        password: this.state.pWord,
-                    }
-                ),
-            });
-
-            if (serverOutput.status === 201) {
-                const data = await serverOutput.json();
-                console.log("USER CREATED SUCCESSFULLY");
-                this.setState({ id: data.user_id });
-                this.props.navigation.navigate("login");
+                if (serverOutput.status === 201) {
+                    const data = await serverOutput.json();
+                    console.log("USER CREATED SUCCESSFULLY");
+                    this.setState({ id: data.user_id });
+                    this.props.navigation.navigate("login");
+                }
+                else if (serverOutput.status === 400) {
+                    console.log("EMAIL ALREADY REGISTORED");
+                    this.setState({ message: "EMAIL ALREADY REGISTORED" });
+                }
+                else {
+                    console.log("ERROR WHEN CREATING USER");
+                    this.setState({ message: "ERROR WHEN CREATING USER, TRY AGAIN" });
+                }
+            } catch (message) {
+                console.error("ERROR:", message);
             }
-            else if (serverOutput.status === 400) {
-                console.log("EMAIL ALREADY REGISTORED");
-                this.setState({ message: "EMAIL ALREADY REGISTORED" });
-            }
-            else {
-                console.log("ERROR WHEN CREATING USER");
-                this.setState({ message: "ERROR WHEN CREATING USER, TRY AGAIN" });
-            }
-        } catch (message) {
-            console.error("ERROR:", message);
         }
+
+
     }
 
     tologin = () => {
