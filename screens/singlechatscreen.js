@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Feather from "react-native-vector-icons/Feather";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 
 import appHeader from '../images/header.jpg';
 export default class SingleChatScreen extends Component {
@@ -234,6 +235,7 @@ export default class SingleChatScreen extends Component {
 
             if (serverOutput.status === 200) {
                 this.getChat();
+                this.setState({ message: " " });
                 console.log("MESSAGE SENT")
             }
             else if (serverOutput.status === 400) {
@@ -260,6 +262,51 @@ export default class SingleChatScreen extends Component {
         }
 
     }
+
+    deleteChat = async (messageID) => {
+        const session_token = await AsyncStorage.getItem("session_token");
+        const chatID = this.state.chatID;
+
+        try {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message/${messageID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': session_token,
+                },
+            });
+
+            if (serverOutput.status === 200) {
+                this.getChat();
+                console.log("MESSAGE DELETED")
+                this.setState({ message: "MESSAGE DELETED" });
+                
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+
+            }
+            else if (serverOutput.status === 403) {
+                console.log("FORBIDDEN");
+                this.setState({ message: "FORBIDDEN, YOU CANT SEND MESSAGE" });
+
+            }
+            else if (serverOutput.status === 404) {
+                console.log("NOT FOUND");
+                this.setState({ message: "NOT FOUND, CHAT DOESNT EXIST" });
+
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
+            }
+        } catch (message) {
+            console.error("ERROR:", message);
+        }
+
+    }
+    
 
     validNewInput = () => {
 
@@ -301,24 +348,40 @@ export default class SingleChatScreen extends Component {
         if (item.author.user_id.toString() === this.state.user) {
 
             return (
+                <View style={styles.myMessaageIcon}>
 
-                <View style={styles.myMessage}>
-                    <View style={styles.myMessageHeader}>
-                    <Text style={styles.nameText}>Me</Text> 
-                        <Text style={styles.myMessageText}>{item.message}</Text>
+                    <View style={styles.myMessage}>
+                        <View style={styles.myMessageHeader}>
+                            <Text style={styles.nameText}>Me</Text>
+                            <Text style={styles.myMessageText}>{item.message}</Text>
+                        </View>
                     </View>
+
+                    <View style={styles.iconStuff}>
+                        <View style={styles.icon1}>
+                            <TouchableOpacity>
+                                <MaterialIcons name="edit" size={15} color="#a2a2a2" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.icon2}>
+                            <TouchableOpacity onPress={() => this.deleteChat(item.message_id)}>
+                                <Ionicons name="md-trash-bin" size={15} color="#a2a2a2" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
                 </View>
             );
         }
         else {
             return (
 
+                
                 <View style={styles.otherMessage}>
-                    <View style={styles.header1}>
-                        <Text style={styles.nameText}> {item.author.first_name}</Text> 
+                    <View style={styles.otherMessageHeader}>
+                        <Text style={styles.nameText}> {item.author.first_name}</Text>
                         <Text style={styles.otherMessageText}>{item.message}</Text>
                     </View>
-
                 </View>
             );
 
@@ -560,6 +623,28 @@ export default class SingleChatScreen extends Component {
 
 const styles = StyleSheet.create
     ({
+        icon1: 
+        {
+            padding: 4,
+            marginLeft: 4,
+        },
+        icon2: 
+        {
+            padding: 4,
+            marginLeft: 4,
+        },
+        iconStuff:
+        {
+            flexDirection: "row",
+            paddingRight: 5,
+        },
+        myMessaageIcon:
+        {
+            alignItems: "flex-end",
+            marginRight: 10,
+            marginLeft: 10,
+            marginTop: 5,
+        },
         nameText:
         {
             color: '#a2a2a2',
@@ -567,10 +652,10 @@ const styles = StyleSheet.create
             padding: 3,
 
         },
-        myMessage: 
+        myMessage:
         {
-            flexDirection: "row", 
-            justifyContent: 'flex-end', 
+            flexDirection: "row",
+            justifyContent: 'flex-end',
             marginTop: 5,
             padding: 2,
         },
@@ -589,8 +674,8 @@ const styles = StyleSheet.create
         },
         otherMessage:
         {
-            flexDirection: "row", 
-            justifyContent: 'flex-start', 
+            flexDirection: "row",
+            justifyContent: 'flex-start',
             marginTop: 5,
             padding: 2,
         },
@@ -638,9 +723,11 @@ const styles = StyleSheet.create
         {
             alignItems: "center",
         },
-        header1:
+        otherMessageHeader:
         {
             alignItems: "flex-start",
+            marginLeft: 10,
+            marginRight: 10,
         },
         myMessageHeader:
         {
@@ -702,7 +789,7 @@ const styles = StyleSheet.create
             fontWeight: 'bold',
             marginBottom: 30,
         },
-    
+
         formText:
         {
             padding: 5,
