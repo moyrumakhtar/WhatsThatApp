@@ -106,22 +106,22 @@ export default class ContactsScreen extends Component {
             if (serverOutput.status === 200) {
                 this.loadContacts();
                 console.log("USER ADDED, ID:", id)
-            } 
+            }
             else if (serverOutput.status === 400) {
                 console.log("BAD REQUEST");
                 this.setState({ message: "BAD REQUEST, CAN'T ADD YOURSELF" });
 
-            } 
+            }
             else if (serverOutput.status === 401) {
                 console.log("UNAUTHORISED");
                 this.setState({ message: "UNAUTHORISED, LOG IN" });
 
-            } 
+            }
             else if (serverOutput.status === 404) {
                 console.log("USER NOT FOUND");
                 this.setState({ message: "USER NOT FOUND, ENTER VALID ID" });
 
-            } 
+            }
             else {
                 console.log("SERVER ERROR");
                 this.setState({ message: "SERVER ERROR, TRY AGAIN LATER" });
@@ -232,10 +232,15 @@ export default class ContactsScreen extends Component {
 
     contactItem = ({ item }) => {
         return (
-            <View style={styles.searchItems}>
+            <View style={styles.searchItems}> 
+            
                 <Text style={styles.searchText}>
                     {item.first_name} {item.last_name}
                 </Text>
+                <Text style={styles.searchText}>
+                    {item.user_id}
+                </Text>
+
                 <View style={styles.buttonControl}>
                     <View style={styles.space}>
                         <TouchableOpacity
@@ -337,6 +342,7 @@ export default class ContactsScreen extends Component {
 
 const styles = StyleSheet.create
     ({
+
         space:
         {
             marginLeft: 30,
@@ -442,8 +448,8 @@ const styles = StyleSheet.create
         button: {
             backgroundColor: '#34633E',
             padding: 5,
-            paddingLeft:10,
-            paddingRight:10,
+            paddingLeft: 10,
+            paddingRight: 10,
 
         },
         input: {

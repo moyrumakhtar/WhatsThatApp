@@ -18,6 +18,16 @@ export default class SettingsScreen extends Component {
         }
     }
 
+    componentDidMount() {
+        this._unsubscribe = this.props.navigation.addListener('focus', () => {
+            this.loadProfile();
+        });
+    }
+
+    componentWillUnmount() {
+        this._unsubscribe();
+    }
+
     loadProfile = async () => {
         const current_id = await AsyncStorage.getItem("current_id");
         const session_token = await AsyncStorage.getItem("session_token");

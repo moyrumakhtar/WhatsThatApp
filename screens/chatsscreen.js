@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, FlatList } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, FlatList, KeyboardAvoidingView } from "react-native";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,22 +15,25 @@ export default class Chatsscreen extends Component {
         this.state = {
             chats: [], AddChat: false, chatName: "",
             chatReady: true, UpdateChat: false, chatID: "", newName: "",
-    
+
 
         }
+    }
+
+    componentDidMount() {
+        this._unsubscribe = this.props.navigation.addListener('focus', () => {
+            this.loadChats();
+        });
+    }
+
+    componentWillUnmount() {
+        this._unsubscribe();
     }
 
     AddChatToggle = () => {
         this.setState(({ AddChat }) => ({ AddChat: !AddChat }));
         this.setState({ message: "" });
     }
-
-    UpdateChatToggle = ( ) => {
-        this.setState(({ UpdateChat }) => ({ UpdateChat: !UpdateChat }));
-        this.setState({ message: "" });
-
-    }
-
 
     loadChats = async () => {
         const session_token = await AsyncStorage.getItem("session_token");
@@ -101,83 +104,6 @@ export default class Chatsscreen extends Component {
         }
     }
 
-    editChat = async () => {
-        const session_token = await AsyncStorage.getItem("session_token");
-        const name = this.state.newName;
-        const id = this.state.chatID;
-        console.log(id)
-
-        try {
-            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/chat/${id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Authorization': session_token,
-                },
-                body: JSON.stringify({ name }),
-            });
-
-            if (serverOutput.status === 200) {
-                this.loadChats();
-                this.UpdateChatToggle();
-                console.log("UPDATED CHAT");
-            }
-            else if (serverOutput.status === 400) {
-                console.log("BAD REQUEST");
-                this.setState({ message: "BAD REQUEST" });
-
-            }
-            else if (serverOutput.status === 401) {
-                console.log("UNAUTHORISED");
-                this.setState({ message: "UNAUTHORISED, LOG IN" });
-
-            }
-            else if (serverOutput.status === 403) {
-                console.log("FORBIDDEN");
-                this.setState({ message: "FORBIDDEN, YOU CAN RENAME" });
-
-            }
-            else if (serverOutput.status === 404) {
-                console.log("NOT FOUND");
-                this.setState({ message: "NOT FOUND, CHAT DOESNT EXIST" });
-
-            }
-            else {
-                console.log("SERVER ERROR");
-                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
-            }
-        } catch (message) {
-            console.error("ERROR:", message);
-        }
-
-    }
-
-    // chatItems = ({ item }) => {
-
-    //     this.setState({ chatID: item.chat_id });
-
-    //     return (
-
-    //         <View style={styles.chatItem}>
-    //             <Text style={styles.chatText}>
-    //                 {item.name}
-    //             </Text>
-
-    //             <View style={styles.buttonControl}>
-
-    //                 <View style={styles.space}>
-    //                     <TouchableOpacity onPressIn={() => this.handleEditChat()}>
-    //                         <Feather name="edit" size={15} color="#0f3d0f" />
-    //                     </TouchableOpacity>
-    //                 </View> 
-    //             </View>
-
-    //         </View>
-
-
-    //     );
-    // };
-
     validInput = () => {
 
         if (!(this.state.chatName)) {
@@ -185,16 +111,6 @@ export default class Chatsscreen extends Component {
         }
         else {
             this.startChat();
-        }
-    }
-
-    validNewInput = () => {
-
-        if (!(this.state.newName)) {
-            this.setState({ message: "ENTER CHAT NAME" });
-        }
-        else {
-            this.editChat();
         }
     }
 
@@ -214,8 +130,9 @@ export default class Chatsscreen extends Component {
                 <View style={styles.container}>
                     <View style={styles.header}>
                         <View style={styles.headerCon}>
-                            <TouchableOpacity>
-                                <Ionicons name="md-add-sharp" size={25} color="#f2f2f2" />
+                        <TouchableOpacity
+                                onPress={() => this.loadChats()}>
+                                <Feather name="refresh-ccw" size={25} color="#f2f2f2" />
                             </TouchableOpacity>
                             <Text style={styles.formAppTitle}> Chats </Text>
                             <TouchableOpacity
@@ -225,30 +142,10 @@ export default class Chatsscreen extends Component {
                         </View>
                     </View>
 
-                    {/* <View style={styles.listBox}>
-                        {this.state.chats.length > 0 ? (
-
-                            <FlatList
-                                data={this.state.chats}
-                                renderItem={this.chatItems}
-                                ListHeaderComponent={() => <Text style={styles.formSubtitle}> Chat List </Text>}
-                                ListEmptyComponent={<Text style={styles.formText}>No Chats Found</Text>}
-                            />
-
-                        ) : (
-                            <FlatList
-                                data={this.state.chats}
-                                renderItem={this.chatItems}
-                                ListHeaderComponent={() => <Text style={styles.formSubtitle}> Chat List </Text>}
-                                ListEmptyComponent={<Text style={styles.formText}>No Chats Found</Text>}
-                            />
-                        )
-                        }
-                    </View> */}
-
                     <View style={styles.listBox}>
                         <FlatList
                             data={this.state.chats}
+
                             renderItem={({ item }) => (
 
                                 <View style={styles.chatItem}>
@@ -256,25 +153,15 @@ export default class Chatsscreen extends Component {
                                         {item.name}
                                     </Text>
                                     <View style={styles.buttonControl}>
-
-                                        <View style={styles.space}>
-                                            <TouchableOpacity onPress={() => {
-                                                this.setState({
-                                                    chatID: item.chat_id,
-                                                    UpdateChat: true
-                                                })
-                                            }}>
-                                                
-                                                {/* </View>this.UpdateChatToggle()}> */}
-                                                <Feather name="edit" size={15} color="#0f3d0f" />
-                                            </TouchableOpacity>
-                                        </View>
+                                        <TouchableOpacity 
+                                            onPress={() => {this.props.navigation.navigate("singleChat", {chatID: item.chat_id, chatName: item.name})}}
+                                            >
+                                            <View style={styles.button1}>
+                                                <Text style={styles.buttonText}>Open</Text>
+                                            </View>
+                                        </TouchableOpacity>
                                     </View>
-
-
                                 </View>
-
-
                             )}
                         />
 
@@ -325,48 +212,6 @@ export default class Chatsscreen extends Component {
 
                 </Modal>
 
-                <Modal
-                    transparent={true}
-                    animationType="slide"
-                    visible={this.state.UpdateChat}
-                    onRequestClose={this.UpdateChatToggle}>
-
-                    <View style={styles.modalCon}>
-                        <View style={styles.modal}>
-
-                            <View style={styles.header}>
-                                <View style={styles.headerCon}>
-                                    <Text style={styles.formAppTitleModal}> Update Chat Name  </Text>
-                                    <TouchableOpacity
-                                        onPress={() => this.UpdateChatToggle()}>
-                                        <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            <View styles={styles.headerCon1}>
-                                <TextInput
-                                    defaultValue={""}
-                                    id="chatNewValue"
-                                    placeholder="Enter New Name"
-                                    placeholderTextColor={"#C0C0C0"}
-                                    onChangeText={(text) => this.setState({ newName: text })}
-                                    style={styles.input}
-
-                                />
-
-                                <TouchableOpacity
-                                    onPress={() => this.validNewInput()}>
-                                    <View style={styles.button}>
-                                        <Text style={styles.buttonText}> Update </Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-
-                </Modal>
-
                 <>
                     {this.state.message &&
                         <Text style={styles.message}>{this.state.message}</Text>
@@ -381,6 +226,14 @@ export default class Chatsscreen extends Component {
 
 const styles = StyleSheet.create
     ({
+        buttonControl:
+        {
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 8,
+            marginTop: 10,
+
+        },
         formSubtitle:
         {
             fontSize: 16,
@@ -421,14 +274,16 @@ const styles = StyleSheet.create
         },
         header:
         {
+            flex: 1,
             alignItems: "center"
         },
         headerCon:
         {
-            width: "90%",
+            width: "100%",
             flexDirection: "row",
-            justifyContent: "space-between",
+            justifyContent: "space-around",
             alignItems: "center",
+
         },
         formAppTitleModal:
         {
@@ -497,10 +352,19 @@ const styles = StyleSheet.create
 
 
         },
-        space: {
-            padding: 10,
-            paddingBottom: 10,
+        button1: {
+            backgroundColor: '#14c83c',
+            padding: 5,
+            paddingLeft: 10,
+            paddingRight: 10,
 
+
+        },
+        space: {
+            alignItems:"center",
+            padding: 10,
+            marginLeft: 10,
+        
 
         },
         buttonText: {

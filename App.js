@@ -13,9 +13,20 @@ import SettingsScreen from './screens/settingsscreen';
 import ContactsScreen from './screens/contactsscreen';
 import BlockScreen from './screens/blockusersscreen';
 import Editscreen from './screens/editscreen';
+import SingleChatScreen from './screens/singlechatscreen';
 
 const tabNav = createBottomTabNavigator();
 const stackNav = createNativeStackNavigator();
+
+function chatStack() {
+  return (
+    <stackNav.Navigator
+    initialRouteName="chats">
+      <stackNav.Screen name="chats" component={ChatsScreen} options={{ headerShown: false }}/>
+      <stackNav.Screen name="singleChat" component={SingleChatScreen} options={{ headerShown: false }}/>
+    </stackNav.Navigator>
+  )
+}
 
 function settingStack() {
   return (
@@ -81,7 +92,7 @@ function mainTabs() {
       })}
     >
       <tabNav.Screen name="contacts" component={contactStack} />
-      <tabNav.Screen name="chats" component={ChatsScreen} />
+      <tabNav.Screen name="chats" component={chatStack} />
       <tabNav.Screen name="settings" component={settingStack} />
     </tabNav.Navigator>
 
