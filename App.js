@@ -1,9 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, getFocusedRouteNameFromRoute } from '@react-navigation/native';
+
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { Component } from 'react';
+import { Component, useLayoutEffect } from 'react';
 
 import SignUpscreen from './screens/signupscreen';
 import LogInscreen from './screens/loginscreen';
@@ -18,12 +19,12 @@ import SingleChatScreen from './screens/singlechatscreen';
 const tabNav = createBottomTabNavigator();
 const stackNav = createNativeStackNavigator();
 
-function chatStack() {
+
+function chatStack () {
   return (
-    <stackNav.Navigator
-    initialRouteName="chats">
+    <stackNav.Navigator>
       <stackNav.Screen name="chats" component={ChatsScreen} options={{ headerShown: false }}/>
-      <stackNav.Screen name="singleChat" component={SingleChatScreen} options={{ headerShown: false }}/>
+      <stackNav.Screen name="singleChat" component={SingleChatScreen} options={{ headerShown: false }} />
     </stackNav.Navigator>
   )
 }
@@ -33,7 +34,7 @@ function settingStack() {
     <stackNav.Navigator
     initialRouteName="setting">
       <stackNav.Screen name="settings" component={SettingsScreen} options={{ headerShown: false }}/>
-      <stackNav.Screen name="edit" component={Editscreen} options={{ headerShown: false }}/>
+      <stackNav.Screen name="edit" component={Editscreen} options={{ headerShown: false}}/>
     </stackNav.Navigator>
   )
 }
@@ -48,7 +49,8 @@ function contactStack() {
   )
 }
 
-function mainTabs() {
+function mainTabs()
+{
   return (
 
     <tabNav.Navigator 

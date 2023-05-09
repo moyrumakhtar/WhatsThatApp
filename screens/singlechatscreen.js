@@ -12,21 +12,21 @@ export default class SingleChatScreen extends Component {
         super(props);
 
         this.state = {
-            pastMessages: [], message: "", chatReady: true, newName: "",
+            pastMessages: [], message: " ", chatReady: true, newName: "",
             chatName: "", newMessage: "", chatID: "", UpdateChat: false,
-            addUser: false, user: "", newPID: ""
+            addUser: false, user: "", newPID: "", sender: false
         };
     };
 
     UpdateChatToggle = () => {
         this.setState(({ UpdateChat }) => ({ UpdateChat: !UpdateChat }));
-        this.setState({ message: "" });
+        this.setState({ message: " " });
 
     }
 
     AddUserToggle = () => {
         this.setState(({ addUser }) => ({ addUser: !addUser }));
-        this.setState({ message: "" });
+        this.setState({ message: " " });
 
     }
 
@@ -217,6 +217,50 @@ export default class SingleChatScreen extends Component {
 
     }
 
+    sendChat = async () => {
+        const session_token = await AsyncStorage.getItem("session_token");
+        const message = this.state.newMessage;
+        const chatID = this.state.chatID;
+
+        try {
+            const serverOutput = await fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': session_token,
+                },
+                body: JSON.stringify({ message }),
+            });
+
+            if (serverOutput.status === 200) {
+                this.getChat();
+                console.log("MESSAGE SENT")
+            }
+            else if (serverOutput.status === 400) {
+                console.log("BAD REQUEST");
+                this.setState({ message: "BAD REQUEST" });
+
+            }
+            else if (serverOutput.status === 401) {
+                console.log("UNAUTHORISED");
+                this.setState({ message: "UNAUTHORISED, LOG IN" });
+
+            }
+            else if (serverOutput.status === 403) {
+                console.log("FORBIDDEN");
+                this.setState({ message: "FORBIDDEN, YOU CANT SEND MESSAGE" });
+
+            }
+            else {
+                console.log("SERVER ERROR");
+                this.setState({ message: "SERVER ERROR, TRY AGAIN" });
+            }
+        } catch (message) {
+            console.error("ERROR:", message);
+        }
+
+    }
+
     validNewInput = () => {
 
         if (!(this.state.newName)) {
@@ -237,14 +281,49 @@ export default class SingleChatScreen extends Component {
         }
     }
 
+    validMessageInput = () => {
+
+        if (!(this.state.newMessage)) {
+            this.setState({ message: "ENTER MESSAGE" });
+        }
+        else {
+            this.sendChat();
+        }
+    }
+
+
     toChats = () => {
         this.props.navigation.navigate("chats");
     }
 
     messageItem = ({ item }) => {
-        return (
-            <Text> ... </Text>
-        )
+
+        if (item.author.user_id.toString() === this.state.user) {
+
+            return (
+
+                <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginTop: 5 }}>
+
+                    <View style={styles.header}>
+                        <Text style={styles.formText}>{item.message}</Text>
+                    </View>
+
+
+                </View>
+            );
+        }
+        else {
+            return (
+
+                <View style={{ flexDirection: "row", justifyContent: 'flex-start', marginTop: 5 }}>
+                    <View style={styles.header}>
+                        <Text style={styles.formText}>{item.message}</Text>
+                    </View>
+
+                </View>
+            );
+
+        }
     }
 
     memberItem = ({ item }) => {
@@ -300,8 +379,8 @@ export default class SingleChatScreen extends Component {
 
             const { chatID } = this.props.route.params;
             this.setState({ chatID: chatID });
-
         }
+
         return (
 
             <View>
@@ -347,36 +426,40 @@ export default class SingleChatScreen extends Component {
 
                         <KeyboardAvoidingView>
                             <View style={styles.message}>
-
-
                                 <FlatList
                                     data={this.state.pastMessages.messages}
                                     ListEmptyComponent={<Text style={styles.formText}>No Messages</Text>}
-                                    renderItem={this.messageItem}
                                     style={styles.flat}
+                                    inverted
+                                    renderItem={this.messageItem}
+                                // renderItem={({ item }) => (
 
-                                    
+                                //     <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginTop: 5 }}>
+                                //         <Text style={styles.formText1}>
+                                //             {item.message}
+                                //         </Text>
+                                //     </View>
+                                // )}
+
                                 />
                                 <>
-                    {this.state.message &&
-                        <Text style={styles.message1}>{this.state.message}</Text>
-                    }
-                </>
+                                    {this.state.message &&
+                                        <Text style={styles.message1}>{this.state.message}</Text>
+                                    }
+                                </>
                             </View>
                             <View style={styles.bottom}>
                                 <View style={styles.messageInput}>
                                     <TextInput
-
-                                        defaultValue={""}
                                         id="message"
                                         placeholder="Enter Message"
                                         placeholderTextColor={"#C0C0C0"}
+                                        value={this.state.newMessage}
                                         onChangeText={(text) => this.setState({ newMessage: text })}
-                                        //onChange={() => this.searchFunction(this.state.searchedValue)}
                                         style={styles.input}
                                     />
 
-                                    <TouchableOpacity>
+                                    <TouchableOpacity onPress={() => this.validMessageInput()}>
                                         <Ionicons name="send" size={25} color="#0f3d0f" />
                                     </TouchableOpacity>
 
@@ -487,10 +570,11 @@ export default class SingleChatScreen extends Component {
 
 const styles = StyleSheet.create
     ({
+
+
         flat: {
-            height: 475,
-            flexGrow: 0
-          },
+            height: 438,
+        },
         formSubtitle:
         {
             fontSize: 16,
@@ -502,7 +586,7 @@ const styles = StyleSheet.create
         headerSub:
         {
             alignItems: "center",
-      
+
         },
         headerConSub:
         {
@@ -574,6 +658,17 @@ const styles = StyleSheet.create
             color: '#34633E',
             fontWeight: 'bold',
             marginBottom: 30,
+        },
+        formText1:
+        {
+            padding: 5,
+            color: 'black',
+            marginTop: 0,
+            marginBottom: 0,
+            fontSize: 13,
+            color: '#34633E',
+            fontWeight: 'bold',
+            alignSelf: "center",
         },
         formText:
         {
@@ -654,8 +749,6 @@ const styles = StyleSheet.create
             fontSize: 13,
             fontWeight: 'bold',
             margin: 10,
-            alignSelf: "center",
-            alignItems: "flex-end"
         },
         message1:
         {
@@ -664,7 +757,6 @@ const styles = StyleSheet.create
             fontSize: 13,
             fontWeight: 'bold',
             margin: 10,
-            marginBottom:31,
             alignSelf: "center",
             alignItems: "flex-end"
         },
@@ -703,6 +795,6 @@ const styles = StyleSheet.create
         },
         bottom:
         {
-            
+
         },
     });
